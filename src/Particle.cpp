@@ -43,7 +43,7 @@ void Particle::integrate() {
 //  return age in seconds
 //
 float Particle::age() {
-	return (ofGetElapsedTimeMillis() - birthtime)/1000.0;
+	return (ofGetElapsedTimeMillis() - birthtime)/10.0;
 }
 
 

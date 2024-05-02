@@ -46,7 +46,7 @@ void ofApp::setup() {
 
 	// load BG image
 	//
-	bBackgroundLoaded = backgroundImage.load("images/starfield-plain.jpg");
+	bBackgroundLoaded = backgroundImage.load("images/background.png");
 
 
 	// setup rudimentary lighting 
@@ -149,6 +149,7 @@ void ofApp::update() {
 
 	headingVec = headingVec.getRotated(angle, ofVec3f(0, 1, 0));
 	lander.setRotation(1, angle, 0, 1, 0);
+	angularVelocity *= 0.94;
 	spaceCraft.acceleration = headingVec;
 
 	spaceCraft.integrate();
