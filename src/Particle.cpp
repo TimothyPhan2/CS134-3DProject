@@ -43,7 +43,12 @@ void Particle::integrate() {
 //  return age in seconds
 //
 float Particle::age() {
-	return (ofGetElapsedTimeMillis() - birthtime)/10.0;
+	return (ofGetElapsedTimeMillis() - birthtime)/30;
+}
+void Particle::setPosition(glm::vec3 newPos){
+	position.x = newPos.x;
+	position.y = newPos.y;
+	position.z = newPos.z;
 }
 
 

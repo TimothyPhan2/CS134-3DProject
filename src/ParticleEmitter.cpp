@@ -35,11 +35,11 @@ void ParticleEmitter::init() {
 	oneShot = false;
 	fired = false;
 	lastSpawned = 0;
-	radius = 0.25;
-	particleRadius = .01;
+	radius = 0.5;
+	particleRadius = .03;
 	visible = true;
 	type = SpecialDiskEmitter;
-	groupSize = 40;
+	groupSize = 70;
 	position = ofVec3f(0, 0, 0);
 	color = ofColor::yellow;
 }
@@ -124,6 +124,11 @@ void ParticleEmitter::spawn(float time) {
 	}
 	break;
 	case SphereEmitter:
+	{
+		ofVec3f dir = ofVec3f(ofRandom(-1, 1), ofRandom(-1, 1), ofRandom(-1, 1));
+		particle.velocity = velocity;
+		particle.position.set(position + dir.getNormalized() * radius);
+	}
 		break;
 	case DirectionalEmitter:
 		particle.velocity = velocity;
@@ -139,7 +144,7 @@ void ParticleEmitter::spawn(float time) {
 	break;
 	case DiskEmitter:
 	{
-		ofVec3f dir = ofVec3f(ofRandom(-1, 1), ofRandom(-1, 1), ofRandom(-1, 1));
+		ofVec3f dir = ofVec3f(ofRandom(-1, 1), ofRandom(0.3, 0.3), ofRandom(-1, 1));
 		particle.velocity = velocity;
 		particle.position.set(position + dir.getNormalized() * radius);
 	}

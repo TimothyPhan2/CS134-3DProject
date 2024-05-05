@@ -20,6 +20,7 @@ public:
 	void    draw();
 	float   age();        // sec
 	ofColor color;
+	void setPosition(glm::vec3 newPos);
 };
 
 
