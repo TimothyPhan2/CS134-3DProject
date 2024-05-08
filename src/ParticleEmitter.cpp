@@ -54,7 +54,7 @@ void ParticleEmitter::draw() {
 			break;
 		case SphereEmitter:
 		case RadialEmitter:
-			ofDrawSphere(position, radius/10);  // just draw a small sphere as a placeholder
+			// ofDrawSphere(position, radius/10);  // just draw a small sphere as a placeholder
 			break;
 		case SpecialDiskEmitter:
 			ofDrawSphere(position, radius / 10);
@@ -104,7 +104,11 @@ void ParticleEmitter::update() {
 
 	sys->update();
 }
-
+void ParticleEmitter::setRingParameters(float minMag, float maxMag, float heightLim) {
+    minRadius = minMag;
+    maxRadius = maxMag;
+    heightLimit = heightLim;
+}
 // spawn a single particle.  time is current time of birth
 //
 void ParticleEmitter::spawn(float time) {
@@ -119,8 +123,9 @@ void ParticleEmitter::spawn(float time) {
 	{
 		ofVec3f dir = ofVec3f(ofRandom(-1, 1), ofRandom(-1, 1), ofRandom(-1, 1));
 		float speed = velocity.length();
+		// float speed = ofRandom(-1, 1);
 		particle.velocity = dir.getNormalized() * speed;
-		particle.position.set(position);
+		particle.position.set(position+ dir.getNormalized() * radius);
 	}
 	break;
 	case SphereEmitter:

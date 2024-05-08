@@ -11,6 +11,7 @@ Particle::Particle() {
 	lifespan = 5;
 	birthtime = 0;
 	radius = .1;
+	// forces.set(0, 0, 0);
 	damping = .99;
 	mass = 1;
 	color = ofColor::aquamarine;

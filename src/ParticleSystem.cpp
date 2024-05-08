@@ -7,6 +7,7 @@ void ParticleSystem::add(const Particle &p) {
 	particles.push_back(p);
 }
 
+
 void ParticleSystem::remove(int i) {
 	particles.erase(particles.begin() + i);
 }
@@ -37,7 +38,7 @@ void ParticleSystem::update() {
 		else p++;
 	}
 
-
+	
 	// integrate all the particles in the store
 	//
 	for (int i = 0; i < particles.size(); i++)

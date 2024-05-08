@@ -23,6 +23,7 @@ public:
 	void setRate(const float r) { rate = r; }
 	void setRadius(const float r) { radius = r; }
 	void setParticleRadius(const float r) { particleRadius = r; }
+	void setRingParameters(float minMag, float maxMag, float heightLim);
 	void setEmitterType(EmitterType t) { type = t; }
 	void setGroupSize(int s) { groupSize = s; }
 	void setOneShot(bool s) { oneShot = s; }
@@ -43,4 +44,7 @@ public:
 	bool createdSys;
 	ofColor color;
 	EmitterType type;
+	float minRadius; 
+    float maxRadius; 
+    float heightLimit; 
 };

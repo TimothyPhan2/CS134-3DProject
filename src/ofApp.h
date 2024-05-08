@@ -64,7 +64,7 @@ public:
 	float angularAcceleration = 0.0f;
 	Particle spaceCraft;
 
-	ParticleEmitter groundedEmitter;
+	ParticleEmitter collisionEmitter;
 	ParticleEmitter thrusterEmitter;
 
 	ofxPanel gui;
@@ -73,6 +73,7 @@ public:
 	ofxFloatSlider lifespan;
 	ofxFloatSlider rate;
 	ofxIntSlider numLevels;
+	ofxToggle groundHeight;
 
 	void startThruster(ParticleEmitter &emitter);
 	// ofShader shader;
@@ -95,7 +96,7 @@ public:
 	void toggleSelectTerrain();
 	glm::vec3 getMousePointOnPlane(glm::vec3 p, glm::vec3 n);
 	// bool mouseIntersectPlane(ofVec3f planePoint, ofVec3f planeNorm, ofVec3f &point);
-	bool raySelectWithOctree(ofVec3f &pointRet);
+	float raySelectWithOctree();
 	// void dragEvent2(ofDragInfo dragInfo);
 	glm::vec3 currentPosition;
 	glm::vec3 lastPosition;
@@ -108,4 +109,16 @@ public:
 	TreeNode selectedNode;
 	Octree octree;
 	bool pointSelected = false;
+	bool catapultShip = false;
+	void restart();
+	float baseLandingForce = 3;
+	float getLandingForce(ofVec3f vel);
+	float getGroundHeight =0;
+	float setH =0;
+	float flySpeed=0;
+	glm::vec3 flyDir;
+	bool getFlyDir=true;
+	float gHeight=0;
+    // bool landed ;
+    // bool tooHardLanding ; 
 };

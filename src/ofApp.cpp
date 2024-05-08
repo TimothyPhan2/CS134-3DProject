@@ -47,11 +47,12 @@ void ofApp::setup()
 	mars.setScaleNormalization(false);
 
 	gui.setup();
-	gui.add(velocity.setup("Velocity", ofVec3f(0, -20, 0), ofVec3f(0, -30, 0), ofVec3f(100, 100, 100)));
-	gui.add(lifespan.setup("Lifespan", 3.0, .1, 10.0));
-	gui.add(rate.setup("Rate", 1.0, .5, 60.0));
-	gui.add(radius.setup("Disk Radius", 0.5, .1, 10.0));
+	// gui.add(velocity.setup("Velocity", ofVec3f(0, -20, 0), ofVec3f(0, -30, 0), ofVec3f(100, 100, 100)));
+	// gui.add(lifespan.setup("Lifespan", 3.0, .1, 10.0));
+	// gui.add(rate.setup("Rate", 1.0, .5, 60.0));
+	// gui.add(radius.setup("Disk Radius", 0.5, .1, 10.0));
 	gui.add(numLevels.setup("Number of Octree Levels", 1, 1, 10));
+	gui.add(groundHeight.setup("Ground Height", false));
 
 	ofSetVerticalSync(true);
 	ofEnableSmoothing();
@@ -90,6 +91,24 @@ void ofApp::setup()
 	//
 
 	thrusterEmitter.setEmitterType(DiskEmitter);
+	// collisionEmitter.setEmitterType(RadialEmitter);
+	// collisionEmitter.color = ofColor::red;
+	// turbForce = new TurbulenceForce(ofVec3f(-20, -20, -20), ofVec3f(20, 20, 20));
+	// gravityForce = new GravityForce(ofVec3f(0, -10, 0));
+	// radialForce = new ImpulseRadialForce(100.0);
+
+
+	// collisionEmitter.sys->addForce(turbForce);
+	// collisionEmitter.sys->addForce(gravityForce);
+	// collisionEmitter.sys->addForce(radialForce);
+	collisionEmitter.setVelocity(ofVec3f(0, 0, 0));
+	collisionEmitter.setOneShot(true);
+	collisionEmitter.setEmitterType(RadialEmitter);
+	collisionEmitter.setGroupSize(500);
+	collisionEmitter.radius=5;
+	collisionEmitter.particleRadius=0.05;
+	collisionEmitter.color = ofColor::red;
+
 }
 
 void ofApp::startThruster(ParticleEmitter &emitter)
@@ -103,19 +122,10 @@ void ofApp::update()
 
 	headingVec = ofVec3f(0, 0, 0);
 
-	// groundedEmitter.setLifespan(lifespan / 10);
-	// groundedEmitter.setVelocity(ofVec3f(velocity));
-	// groundedEmitter.setRate(rate);
-	// groundedEmitter.setRadius(radius);
-
-	// groundedEmitter.update();
-	// thrusterEmitter.setLifespan(lifespan / 10);
-	// thrusterEmitter.setVelocity(ofVec3f(velocity));
-	// thrusterEmitter.setRate(rate);
-	// thrusterEmitter.setRadius(radius);
-	if (!bInDrag)
+	spaceCraft.setPosition(lander.getPosition());
+	if (!bInDrag && !catapultShip && !isCollided)
 	{
-		spaceCraft.setPosition(lander.getPosition());
+		// spaceCraft.setPosition(lander.getPosition());
 		if (moveUp)
 		{
 			headingVec.z = -headingSpeed;
@@ -167,40 +177,56 @@ void ofApp::update()
 		lander.setRotation(1, angle, 0, 1, 0);
 		angularVelocity *= 0.94;
 		spaceCraft.acceleration = headingVec;
-
-		spaceCraft.integrate();
-
-		// Prevents the lander from going below the grid
-		// if (spaceCraft.position.y < 0)
-		// {
-		// 	spaceCraft.position.y = 0;
-		// }
-
-		lander.setPosition(spaceCraft.position.x, spaceCraft.position.y, spaceCraft.position.z);
 	}
+	spaceCraft.integrate();
+
+	// Prevents the lander from going below the grid
+	// if (spaceCraft.position.y < 0)
+	// {
+	// 	spaceCraft.position.y = 0;
+	// }
+
+	lander.setPosition(spaceCraft.position.x, spaceCraft.position.y, spaceCraft.position.z);
 
 	thrusterEmitter.setPosition(spaceCraft.position);
 
 	thrusterEmitter.update();
 
-	if (bLanderLoaded)
+	currentPosition = lander.getPosition();
+
+	if (currentPosition != lastPosition)
 	{
-		currentPosition = lander.getPosition();
+		lastMovementDirection = currentPosition - lastPosition;
+		lastMovementDirection = glm::normalize(lastMovementDirection);
+	}
 
-		if (currentPosition != lastPosition)
+	lastPosition = currentPosition;
+
+	checkCollision();
+	if (isCollided)
+	{
+		float landingForce = getLandingForce(spaceCraft.velocity);
+		// cout << "landing force: " << landingForce << endl;
+		if (landingForce > baseLandingForce)
 		{
-			lastMovementDirection = currentPosition - lastPosition;
-			lastMovementDirection = glm::normalize(lastMovementDirection);
-		}
-
-		lastPosition = currentPosition;
-
-		checkCollision();
-		if (isCollided)
-		{
-			reverseLanderMovement();
+			catapultShip = true;
+			// cout << "landing force: " << landingForce << endl;
 		}
 	}
+	else
+	{
+		setH = 0;
+	}
+	reverseLanderMovement();
+	// cout << "v:" << spaceCraft.velocity.y << endl;
+	collisionEmitter.start();
+	if(catapultShip && isCollided){
+		collisionEmitter.setPosition(spaceCraft.position);
+		// collisionEmitter.start();
+		// collisionEmitter.update();
+	}
+	// collisionEmitter.start();
+	collisionEmitter.update();
 }
 
 //--------------------------------------------------------------
@@ -223,15 +249,6 @@ void ofApp::draw()
 	theCam->begin();
 
 	ofPushMatrix();
-	// draw a reference grid
-	//
-	// ofPushMatrix();
-	// ofRotate(90, 0, 0, 1);
-	// ofSetLineWidth(1);
-	// ofSetColor(ofColor::dimGray);
-	// ofDisableLighting();
-	// ofDrawGridPlane();
-	// ofPopMatrix();
 
 	if (bWireframe)
 	{ // wireframe mode  (include axis)
@@ -262,30 +279,17 @@ void ofApp::draw()
 			lander.drawFaces();
 			if (!bTerrainSelected)
 				drawAxis(lander.getPosition());
-			// if (bDisplayBBoxes)
-			// {
-			// 	ofNoFill();
-			// 	ofSetColor(ofColor::white);
-			// 	cout<<"here????"<<endl;
-			// 	for (int i = 0; i < lander.getNumMeshes(); i++)
-			// 	{
-			// 		cout<<"here------"<<endl;
-			// 		ofPushMatrix();
-			// 		cout<<"here????"<<endl;
-			// 		ofMultMatrix(lander.getModelMatrix());
-			// 		ofRotate(-90, 1, 0, 0);
-			// 		Octree::drawBox(bboxList[i]);
-			// 		ofPopMatrix();
-			// 	}
-			// }
 
-			// ofVec3f min = lander.getSceneMin() + lander.getPosition();
-			// ofVec3f max = lander.getSceneMax() + lander.getPosition();
+			if (bLanderSelected || isCollided)
+			{
+				ofVec3f min = lander.getSceneMin() + lander.getPosition();
+				ofVec3f max = lander.getSceneMax() + lander.getPosition();
 
-			// Box bounds = Box(Vector3(min.x, min.y, min.z), Vector3(max.x, max.y, max.z));
-			// ofNoFill();
-			// ofSetColor(ofColor::white);
-			// Octree::drawBox(bounds);
+				Box bounds = Box(Vector3(min.x, min.y, min.z), Vector3(max.x, max.y, max.z));
+				ofNoFill();
+				ofSetColor(ofColor::white);
+				Octree::drawBox(bounds);
+			}
 
 			// draw colliding boxes
 			//
@@ -328,6 +332,9 @@ void ofApp::draw()
 
 	// groundedEmitter.draw();
 	thrusterEmitter.draw();
+	if(catapultShip){
+		collisionEmitter.draw();
+	}
 	theCam->end();
 
 	ofDisableDepthTest();
@@ -346,6 +353,32 @@ void ofApp::draw()
 	str2 += "Altitide (AGL): " + std::to_string(lander.getPosition().y);
 	ofSetColor(ofColor::white);
 	ofDrawBitmapString(str2, 5, 15);
+
+	if (groundHeight)
+	{
+		string str3;
+		gHeight = lander.getPosition().y - raySelectWithOctree();
+		str3 += "Ground Height: " + std::to_string(gHeight);
+		ofSetColor(ofColor::white);
+		ofDrawBitmapString(str3, ofGetWindowWidth() - 170, 30);
+	}
+	string str41 = "Press space to restart!";
+	ofSetColor(ofColor::red);
+	ofDrawBitmapString(str41, ofGetWindowWidth()/2 - 15, 30);
+	float sp = spaceCraft.velocity.length();
+	if((sp<0.01 && gHeight<0.4 && gHeight > 0.1)){
+		string str4 = "Game Over! Win!";
+		ofSetColor(ofColor::red);
+		ofDrawBitmapString(str4, ofGetWindowWidth()/2 - 15, 15);
+		// ofDrawBitmapString(str41, ofGetWindowWidth()/2 - 15, 30);
+	}else if(catapultShip){ 
+		string str5 = "Game Over! Lose!";
+		ofSetColor(ofColor::red);
+		ofDrawBitmapString(str5, ofGetWindowWidth()/2 -15, 15);
+		// if(sp>1000){
+		// 	restart();
+		// }
+	}
 }
 
 // Draw an XYZ axis in RGB at world (0,0,0) for reference.
@@ -371,6 +404,14 @@ void ofApp::drawAxis(ofVec3f location)
 	ofDrawLine(ofPoint(0, 0, 0), ofPoint(0, 0, 1));
 
 	ofPopMatrix();
+}
+
+float ofApp::getLandingForce(ofVec3f vel)
+{
+	ofVec3f collisionVelocity = vel;
+	float landingForce = collisionVelocity.length();
+
+	return landingForce;
 }
 
 void ofApp::keyPressed(int key)
@@ -463,11 +504,24 @@ void ofApp::keyPressed(int key)
 		moveRight = true;
 		break;
 	case ' ':
+		restart();
 		// groundedEmitter.start();
 		break;
 	default:
 		break;
 	}
+}
+
+void ofApp::restart()
+{
+	catapultShip = false;
+	lander.setPosition(0, 0, 0);
+	lander.setRotation(0, 0, 1, 0, 0);
+	spaceCraft.velocity.set(0, 0, 0);
+	spaceCraft.acceleration.set(0, 0, 0);
+	getFlyDir = true;
+	flySpeed =0;
+	collisionEmitter.setPosition(spaceCraft.position);
 }
 
 void ofApp::toggleWireframeMode()
@@ -524,7 +578,7 @@ void ofApp::keyReleased(int key)
 		thrustDown = false;
 		break;
 	case 'x':
-		groundedEmitter.stop();
+		// groundedEmitter.stop();
 		break;
 	default:
 		break;
@@ -550,82 +604,28 @@ void ofApp::mousePressed(int x, int y, int button)
 	ofVec3f max = lander.getSceneMax() + lander.getPosition();
 	Ray ray(Vector3(origin.x, origin.y, origin.z), Vector3(mouseDir.x, mouseDir.y, mouseDir.z));
 
-	if (bLanderLoaded)
+	Box bounds = Box(Vector3(min.x, min.y, min.z), Vector3(max.x, max.y, max.z));
+	bool hit = bounds.intersect(ray, 0, 10000);
+	if (hit)
 	{
-		// glm::vec3 origin = cam.getPosition();
-		// glm::vec3 mouseWorld = cam.screenToWorld(glm::vec3(mouseX, mouseY, 0));
-		// glm::vec3 mouseDir = glm::normalize(mouseWorld - origin);
-
-		// ofVec3f min = lander.getSceneMin() + lander.getPosition();
-		// ofVec3f max = lander.getSceneMax() + lander.getPosition();
-		// Ray ray(Vector3(origin.x, origin.y, origin.z), Vector3(mouseDir.x, mouseDir.y, mouseDir.z));
-
-		Box bounds = Box(Vector3(min.x, min.y, min.z), Vector3(max.x, max.y, max.z));
-		bool hit = bounds.intersect(ray, 0, 10000);
-		if (hit)
-		{
-			bLanderSelected = true;
-			mouseDownPos = getMousePointOnPlane(lander.getPosition(), cam.getZAxis());
-			mouseLastPos = mouseDownPos;
-			bInDrag = true;
-		}
-		else
-		{
-			bLanderSelected = false;
-		}
+		bLanderSelected = true;
+		mouseDownPos = getMousePointOnPlane(lander.getPosition(), cam.getZAxis());
+		mouseLastPos = mouseDownPos;
+		bInDrag = true;
 	}
 	else
 	{
-		// 	float startTime;
-		// 	if (timingInfoToggle)
-		// 	{
-		// 		startTime = ofGetElapsedTimeMillis();
-		// 	}
-		ofVec3f p;
-		raySelectWithOctree(p);
-
-		// 	// Ray ray(Vector3(origin.x, origin.y, origin.z), Vector3(mouseDir.x, mouseDir.y, mouseDir.z));
-		// 	// TreeNode selectedNode;
-		// 	// float startTime = ofGetElapsedTimeMillis();
-		// 	// if (octree.intersect(ray, octree.root, selectedNode))
-		// 	if (pointSelected && numLevels==5)
-		// 	{
-		// 		bPointSelected = true;
-		// 		selectedPoint = getClosestPointToRay(selectedNode, ray);
-		// 		// drawSphereAtPoint(selectedPoint);
-		// 	}
-		// 	else
-		// 	{
-		// 		bPointSelected = false;
-		// 	}
-		// 	if (timingInfoToggle)
-		// 	{
-		// 		float endTime = ofGetElapsedTimeMillis();
-		// 		cout << "Time for ray intersection: " << endTime - startTime << " ms" << endl;
-		// 	}
+		bLanderSelected = false;
 	}
 }
 
-bool ofApp::raySelectWithOctree(ofVec3f &pointRet)
+float ofApp::raySelectWithOctree()
 {
-	ofVec3f mouse(mouseX, mouseY);
-	ofVec3f rayPoint = cam.screenToWorld(mouse);
-	ofVec3f rayDir = rayPoint - cam.getPosition();
-	rayDir.normalize();
-	// if (timingInfoToggle)
-	// {
-	// 	float startTime = ofGetElapsedTimeMillis();
-	// 	Ray ray = Ray(Vector3(rayPoint.x, rayPoint.y, rayPoint.z),
-	// 				  Vector3(rayDir.x, rayDir.y, rayDir.z));
-
-	// 	pointSelected = octree.intersect(ray, octree.root, selectedNode);
-	// 	float endTime = ofGetElapsedTimeMillis();
-	// 	cout << "Time for ray intersection: " << endTime - startTime << " ms" << endl;
-	// }
-	// else
-	// {
+	ofVec3f pointRet(0, 0, 0);
+	ofVec3f rayPoint = lander.getPosition();
 	Ray ray = Ray(Vector3(rayPoint.x, rayPoint.y, rayPoint.z),
-				  Vector3(rayDir.x, rayDir.y, rayDir.z));
+				  Vector3(0, -1, 0));
+	// Ray ray = Ray(Vector3(rayPoint.x, 0, rayPoint.z), Vector3(rayPoint.x, rayPoint.y, rayPoint.z));
 
 	pointSelected = octree.intersect(ray, octree.root, selectedNode);
 	// }
@@ -634,7 +634,7 @@ bool ofApp::raySelectWithOctree(ofVec3f &pointRet)
 	{
 		pointRet = octree.mesh.getVertex(selectedNode.points[0]);
 	}
-	return pointSelected;
+	return pointRet.y;
 }
 
 //--------------------------------------------------------------
@@ -659,10 +659,8 @@ void ofApp::mouseDragged(int x, int y, int button)
 		// float offset = 2;
 		// lander.setPosition(mousePos.x, mousePos.y - offset, mousePos.z);
 		glm::vec3 delta = mousePos - mouseLastPos;
-		cout << "drag: x:" << delta.x << " y:" << delta.y << " z:" << delta.z << endl;
 
 		landerPos += delta;
-		cout << "lander: x:" << landerPos.x << " y:" << landerPos.y << " z:" << landerPos.z << endl;
 		lander.setPosition(landerPos.x, landerPos.y, landerPos.z);
 		mouseLastPos = mousePos;
 
@@ -785,54 +783,38 @@ glm::vec3 ofApp::getMousePointOnPlane(glm::vec3 planePt, glm::vec3 planeNorm)
 		return glm::vec3(0, 0, 0);
 }
 
-ofVec3f ofApp::getClosestPointToRay(const TreeNode &node, const Ray &ray)
-{
-	float minDistance = FLT_MAX;
-	ofVec3f closestPoint;
-	// glm::vec3 rayOrigin(ray.origin.x(), ray.origin.y(), ray.origin.z());
-	for (int idx : node.points)
-	{
-		ofVec3f point = mars.getMesh(0).getVertex(idx);
-		glm::vec3 glmPoint(point.x, point.y, point.z);
-		float distance = pointToRayDistance(glmPoint, ray); // Simple distance calculation from ray origin to point
-		if (distance < minDistance)
-		{
-			minDistance = distance;
-			closestPoint = point;
-		}
-	}
-	return closestPoint;
-}
-
-float ofApp::pointToRayDistance(const glm::vec3 &point, const Ray &ray)
-{
-	glm::vec3 p1 = glm::vec3(ray.origin.x(), ray.origin.y(), ray.origin.z());
-	glm::vec3 p2 = p1 + glm::vec3(ray.direction.x(), ray.direction.y(), ray.direction.z()); // Assuming ray.direction is normalized
-	glm::vec3 pVec = point - p1;
-	glm::vec3 rayVec = p2 - p1;
-
-	// Project point onto the ray
-	float t = glm::dot(pVec, rayVec) / glm::dot(rayVec, rayVec);
-	glm::vec3 projection = p1 + rayVec * t;
-	return glm::length(projection - point);
-}
-
 void ofApp::reverseLanderMovement()
 {
-	float stepBackSize = 0.1;
-	glm::vec3 reverseStep = lastMovementDirection * stepBackSize*-1;
-
-	// lander.setPosition(lander.getPosition().x + reverseStep);
-	glm::vec3 newPosition = lander.getPosition() + reverseStep;
-	lander.setPosition(newPosition.x, newPosition.y, newPosition.z);
-
-	currentPosition = lander.getPosition();
-	lastPosition = currentPosition;
-	checkCollision();
-
+	if (catapultShip)
+	{
+		flySpeed += 3;
+		if (getFlyDir)
+		{
+			flyDir = lastMovementDirection;
+			getFlyDir = false;
+		}
+		glm::vec3 reverseStep = flyDir * flySpeed * -1;
+		spaceCraft.acceleration = reverseStep;
+		spaceCraft.integrate();
+		lander.setPosition(spaceCraft.position.x, spaceCraft.position.y, spaceCraft.position.z);
+		currentPosition = lander.getPosition();
+		lastPosition = currentPosition;
+	}
+	else if (isCollided)
+	{
+		float stepBackSize = 100;
+		glm::vec3 reverseStep = lastMovementDirection * stepBackSize * -1;
+		spaceCraft.acceleration = reverseStep;
+		spaceCraft.integrate();
+		lander.setPosition(spaceCraft.position.x, spaceCraft.position.y, spaceCraft.position.z);
+		currentPosition = lander.getPosition();
+		lastPosition = currentPosition;
+		// cout << "v:"<<spaceCraft.velocity.y<<endl;
+	}
 	if (!isCollided)
 	{
-		isReverseAnimationActive = false;
+		getGroundHeight = raySelectWithOctree();
+		// cout << "---gh: "<<getGroundHeight<<endl;
 	}
 }
 

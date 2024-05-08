@@ -5,8 +5,6 @@
 #include "Particle.h"
 
 
-
-
 class ParticleSystem {
 public:
 	void add(const Particle &);
@@ -14,10 +12,11 @@ public:
 	void update();
 	void setLifespan(float);
 	int removeNear(const ofVec3f & point, float dist);
+	// void addForce(ParticleForce *f);
+	void reset();
+
 	void draw();
 	vector<Particle> particles;
 };
-
-
 
 
