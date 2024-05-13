@@ -121,4 +121,8 @@ public:
 	float gHeight=0;
     // bool landed ;
     // bool tooHardLanding ; 
+	TurbulenceForce *turbForce;
+	GravityForce *gravityForce;
+	ImpulseRadialForce *radialForce;
+	bool restartBool=true;
 };

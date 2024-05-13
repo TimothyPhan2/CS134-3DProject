@@ -11,7 +11,7 @@ Particle::Particle() {
 	lifespan = 5;
 	birthtime = 0;
 	radius = .1;
-	// forces.set(0, 0, 0);
+	forces.set(0, 0, 0);
 	damping = .99;
 	mass = 1;
 	color = ofColor::aquamarine;
@@ -32,12 +32,14 @@ void Particle::integrate() {
 
 	
 	position += (velocity * dt);
-
-	velocity += acceleration * dt;
+	ofVec3f accel = acceleration;  
+	accel += (forces * (1.0 / mass));
+	velocity += accel * dt;
+	// velocity += acceleration * dt;
 
 	
 	velocity *= damping;
-
+	// forces.set(0, 0, 0);
 	
 }
 

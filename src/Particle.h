@@ -15,7 +15,7 @@ public:
 	float   mass;
 	float   lifespan;
 	float   radius;
-	// ofVec3f forces;
+	ofVec3f forces;
 	float   birthtime;
 	void    integrate();
 	void    draw();
