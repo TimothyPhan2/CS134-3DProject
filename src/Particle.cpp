@@ -39,7 +39,7 @@ void Particle::integrate() {
 
 	
 	velocity *= damping;
-	// forces.set(0, 0, 0);
+	forces.set(0, 0, 0);
 	
 }
 

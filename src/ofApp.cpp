@@ -178,9 +178,10 @@ void ofApp::update()
 		lander.setRotation(1, angle, 0, 1, 0);
 		angularVelocity *= 0.94;
 		spaceCraft.acceleration = headingVec;
+		spaceCraft.integrate();
 	}
 	cout << "v1111:" << spaceCraft.velocity.y << endl;
-	spaceCraft.integrate();
+	// spaceCraft.integrate();
 	cout << "v22222:" << spaceCraft.velocity.y << endl;
 	// Prevents the lander from going below the grid
 	// if (spaceCraft.position.y < 0)
@@ -801,8 +802,9 @@ void ofApp::reverseLanderMovement()
 			getFlyDir = false;
 		}
 		glm::vec3 reverseStep = flyDir * flySpeed * -1;
-		spaceCraft.velocity.set(0, 0, 0);
+		// spaceCraft.velocity.set(0, 0, 0);
 		spaceCraft.acceleration = reverseStep;
+		spaceCraft.forces.set(0,100,0);
 		spaceCraft.integrate();
 		lander.setPosition(spaceCraft.position.x, spaceCraft.position.y, spaceCraft.position.z);
 		currentPosition = lander.getPosition();
