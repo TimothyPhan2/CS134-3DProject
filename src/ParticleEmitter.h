@@ -29,6 +29,7 @@ public:
 	void setOneShot(bool s) { oneShot = s; }
 	void update();
 	void spawn(float time);
+	void stopD();
 	ParticleSystem *sys;
 	float rate;         // per sec
 	bool oneShot;
@@ -47,4 +48,5 @@ public:
 	float minRadius; 
     float maxRadius; 
     float heightLimit; 
+	float speed = 80;
 };

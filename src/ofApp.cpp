@@ -14,6 +14,32 @@
 //
 void ofApp::setup()
 {
+	// Define the vertex shader code
+    // const char* vertexShaderSource = R"(
+    // #version 120
+    // attribute vec4 position;
+    // attribute vec4 color;
+    // varying vec4 vColor;
+
+    // void main() {
+    //     vColor = color;
+    //     gl_Position = position;
+    // }
+    // )";
+
+    // // Define the fragment shader code
+    // const char* fragmentShaderSource = R"(
+    // #version 120
+    // varying vec4 vColor;
+
+    // void main() {
+    //     gl_FragColor = vColor;
+    // }
+    // )";
+
+	// particleShader.setupShaderFromSource(GL_VERTEX_SHADER, vertexShaderSource);
+    // particleShader.setupShaderFromSource(GL_FRAGMENT_SHADER, fragmentShaderSource);
+    // particleShader.linkProgram();
 
 	bWireframe = false;
 	bDisplayPoints = false;
@@ -70,12 +96,12 @@ void ofApp::setup()
 
 	// load lander model
 	//
-	if (lander.loadModel("geo/lander.obj"))
+	if (lander.loadModel("geo/seat.obj"))
 	{
 		lander.setScaleNormalization(false);
 		lander.setScale(1, 1, 1);
-		lander.setRotation(0, 0, 1, 0, 0);
-		lander.setPosition(0, 0, 0);
+		lander.setRotation(0, 90, 0, 1, 0);
+		lander.setPosition(0, 0.5, 0);
 
 		bLanderLoaded = true;
 		cout << "geo/lander.obj" << endl;
@@ -95,20 +121,20 @@ void ofApp::setup()
 	// collisionEmitter.color = ofColor::red;
 	turbForce = new TurbulenceForce(ofVec3f(-1, -1, -1), ofVec3f(1, 1, 1));
 	gravityForce = new GravityForce(ofVec3f(0, -10, 0));
+	shipGravity.set(0, -0.05, 0);
 	radialForce = new ImpulseRadialForce(1.0);
 
 	thrusterEmitter.sys->addForce(gravityForce);
 	collisionEmitter.sys->addForce(turbForce);
 	collisionEmitter.sys->addForce(gravityForce);
 	collisionEmitter.sys->addForce(radialForce);
-	collisionEmitter.setVelocity(ofVec3f(0, 0, 0));
 	collisionEmitter.setOneShot(true);
 	collisionEmitter.setEmitterType(RadialEmitter);
 	collisionEmitter.setGroupSize(500);
-	collisionEmitter.radius=5;
-	collisionEmitter.particleRadius=0.05;
+	collisionEmitter.radius = 100;
+	collisionEmitter.particleRadius = 0.05;
 	collisionEmitter.color = ofColor::red;
-
+	// spaceCraft.forces=shipGravity;
 }
 
 void ofApp::startThruster(ParticleEmitter &emitter)
@@ -121,10 +147,10 @@ void ofApp::update()
 {
 
 	headingVec = ofVec3f(0, 0, 0);
-
+	spaceCraft.forces = shipGravity;
 	spaceCraft.setPosition(lander.getPosition());
 	checkCollision();
-	if (!bInDrag && !catapultShip && !isCollided &&restartBool)
+	if (!bInDrag && !catapultShip && !isCollided && restartBool)
 	{
 		// spaceCraft.setPosition(lander.getPosition());
 		if (moveUp)
@@ -180,14 +206,10 @@ void ofApp::update()
 		spaceCraft.acceleration = headingVec;
 		spaceCraft.integrate();
 	}
-	cout << "v1111:" << spaceCraft.velocity.y << endl;
-	// spaceCraft.integrate();
-	cout << "v22222:" << spaceCraft.velocity.y << endl;
-	// Prevents the lander from going below the grid
-	// if (spaceCraft.position.y < 0)
-	// {
-	// 	spaceCraft.position.y = 0;
-	// }
+	if (!catapultShip)
+	{
+		collisionEmitter.setPosition(spaceCraft.position);
+	}
 
 	lander.setPosition(spaceCraft.position.x, spaceCraft.position.y, spaceCraft.position.z);
 
@@ -204,11 +226,10 @@ void ofApp::update()
 	}
 
 	lastPosition = currentPosition;
-	if(spaceCraft.position.y < getGroundHeight){
+	if (spaceCraft.position.y < getGroundHeight)
+	{
 		spaceCraft.setPosition(glm::vec3(spaceCraft.position.x, getGroundHeight, spaceCraft.position.z));
 	}
-	// cout << "v22222:" << spaceCraft.velocity.y << endl;
-	// checkCollision();
 	if (isCollided)
 	{
 		float landingForce = getLandingForce(spaceCraft.velocity);
@@ -216,21 +237,10 @@ void ofApp::update()
 		if (landingForce > baseLandingForce)
 		{
 			catapultShip = true;
-			// cout << "landing force: " << landingForce << endl;
 		}
 	}
-	else
-	{
-		setH = 0;
-	}
-	cout << "v33333:" << spaceCraft.velocity.y << endl;
 	reverseLanderMovement();
-	cout << "v:" << spaceCraft.velocity.y << endl;
 	collisionEmitter.start();
-	if(catapultShip && isCollided){
-		collisionEmitter.setPosition(spaceCraft.position);
-	}
-	// collisionEmitter.start();
 	collisionEmitter.update();
 }
 
@@ -335,11 +345,14 @@ void ofApp::draw()
 
 	ofPopMatrix();
 
+	// particleShader.begin();
 	// groundedEmitter.draw();
 	thrusterEmitter.draw();
-	if(catapultShip){
+	if (catapultShip)
+	{
 		collisionEmitter.draw();
 	}
+	// particleShader.end();
 	theCam->end();
 
 	ofDisableDepthTest();
@@ -369,21 +382,26 @@ void ofApp::draw()
 	}
 	string str41 = "Press space to restart!";
 	ofSetColor(ofColor::red);
-	ofDrawBitmapString(str41, ofGetWindowWidth()/2 - 15, 30);
+	ofDrawBitmapString(str41, ofGetWindowWidth() / 2 - 15, 30);
 	float sp = spaceCraft.velocity.length();
-	if((sp<0.01 && gHeight<0.4 && gHeight > 0.1)){
+	if ((sp < 0.01 && gHeight < 0.4 && gHeight > 0.1))
+	{
 		string str4 = "Game Over! Win!";
 		ofSetColor(ofColor::red);
-		ofDrawBitmapString(str4, ofGetWindowWidth()/2 - 15, 15);
-		restartBool=false;
+		ofDrawBitmapString(str4, ofGetWindowWidth() / 2 - 15, 15);
+		restart();
+		restartBool = false;
 		// ofDrawBitmapString(str41, ofGetWindowWidth()/2 - 15, 30);
-	}else if(catapultShip){ 
+	}
+	else if (catapultShip)
+	{
 		string str5 = "Game Over! Lose!";
 		ofSetColor(ofColor::red);
-		ofDrawBitmapString(str5, ofGetWindowWidth()/2 -15, 15);
-		if(sp>1000){
+		ofDrawBitmapString(str5, ofGetWindowWidth() / 2 - 15, 15);
+		if (sp > 1000)
+		{
 			restart();
-			restartBool=false;
+			restartBool = false;
 		}
 	}
 }
@@ -521,15 +539,18 @@ void ofApp::keyPressed(int key)
 
 void ofApp::restart()
 {
+	lander.setRotation(0, 90, 0, 1, 0);
+	lander.setPosition(0, 0.5, 0);
+
 	catapultShip = false;
-	lander.setPosition(0, 0, 0);
-	lander.setRotation(0, 0, 1, 0, 0);
 	spaceCraft.velocity.set(0, 0, 0);
 	spaceCraft.acceleration.set(0, 0, 0);
+	// spaceCraft.forces=shipGravity;
 	getFlyDir = true;
-	flySpeed =0;
+	flySpeed = 0;
 	collisionEmitter.setPosition(spaceCraft.position);
-	restartBool=true;
+	collisionEmitter.stop();
+	restartBool = true;
 }
 
 void ofApp::toggleWireframeMode()
@@ -804,12 +825,11 @@ void ofApp::reverseLanderMovement()
 		glm::vec3 reverseStep = flyDir * flySpeed * -1;
 		// spaceCraft.velocity.set(0, 0, 0);
 		spaceCraft.acceleration = reverseStep;
-		spaceCraft.forces.set(0,100,0);
+		spaceCraft.forces.set(0, 500, 0);
 		spaceCraft.integrate();
 		lander.setPosition(spaceCraft.position.x, spaceCraft.position.y, spaceCraft.position.z);
 		currentPosition = lander.getPosition();
 		lastPosition = currentPosition;
-		cout << "v*****:"<<spaceCraft.velocity.y<<endl;
 	}
 	else if (isCollided)
 	{
@@ -820,13 +840,10 @@ void ofApp::reverseLanderMovement()
 		lander.setPosition(spaceCraft.position.x, spaceCraft.position.y, spaceCraft.position.z);
 		currentPosition = lander.getPosition();
 		lastPosition = currentPosition;
-		cout << "-----v:"<<spaceCraft.velocity.y<<endl;
 	}
 	if (!isCollided)
 	{
 		getGroundHeight = raySelectWithOctree();
-		// cout << "---gh: "<<getGroundHeight<<endl;
-		// cout << "v:"<<spaceCraft.velocity.y<<endl;
 	}
 }
 

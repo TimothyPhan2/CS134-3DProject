@@ -35,8 +35,6 @@ void Particle::integrate() {
 	ofVec3f accel = acceleration;  
 	accel += (forces * (1.0 / mass));
 	velocity += accel * dt;
-	// velocity += acceleration * dt;
-
 	
 	velocity *= damping;
 	forces.set(0, 0, 0);

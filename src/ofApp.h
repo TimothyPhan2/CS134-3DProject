@@ -111,7 +111,7 @@ public:
 	bool pointSelected = false;
 	bool catapultShip = false;
 	void restart();
-	float baseLandingForce = 3;
+	float baseLandingForce = 5;
 	float getLandingForce(ofVec3f vel);
 	float getGroundHeight =0;
 	float setH =0;
@@ -125,4 +125,6 @@ public:
 	GravityForce *gravityForce;
 	ImpulseRadialForce *radialForce;
 	bool restartBool=true;
+	ofVec3f shipGravity;
+	// ofShader particleShader;
 };

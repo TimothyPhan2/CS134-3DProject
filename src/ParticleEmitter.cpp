@@ -3,13 +3,15 @@
 
 #include "ParticleEmitter.h"
 
-ParticleEmitter::ParticleEmitter() {
+ParticleEmitter::ParticleEmitter()
+{
 	sys = new ParticleSystem();
 	createdSys = true;
 	init();
 }
 
-ParticleEmitter::ParticleEmitter(ParticleSystem *s) {
+ParticleEmitter::ParticleEmitter(ParticleSystem *s)
+{
 	if (s == NULL)
 	{
 		cout << "fatal error: null particle system passed to ParticleEmitter()" << endl;
@@ -20,14 +22,17 @@ ParticleEmitter::ParticleEmitter(ParticleSystem *s) {
 	init();
 }
 
-ParticleEmitter::~ParticleEmitter() {
+ParticleEmitter::~ParticleEmitter()
+{
 
 	// deallocate particle system if emitter created one internally
 	//
-	if (createdSys) delete sys;
+	if (createdSys)
+		delete sys;
 }
 
-void ParticleEmitter::init() {
+void ParticleEmitter::init()
+{
 	rate = 1;
 	velocity = ofVec3f(0, -20, 0);
 	lifespan = 3;
@@ -44,16 +49,17 @@ void ParticleEmitter::init() {
 	color = ofColor::yellow;
 }
 
-
-
-void ParticleEmitter::draw() {
-	if (visible) {
-		switch (type) {
+void ParticleEmitter::draw()
+{
+	if (visible)
+	{
+		switch (type)
+		{
 		case DirectionalEmitter:
-			ofDrawSphere(position, radius/10);  // just draw a small sphere for point emitters 
+			ofDrawSphere(position, radius / 10); // just draw a small sphere for point emitters
 			break;
 		case SphereEmitter:
-		case RadialEmitter:
+		// case RadialEmitter:
 			// ofDrawSphere(position, radius/10);  // just draw a small sphere as a placeholder
 			break;
 		case SpecialDiskEmitter:
@@ -63,23 +69,29 @@ void ParticleEmitter::draw() {
 			break;
 		}
 	}
-	sys->draw();  
+	sys->draw();
 }
-void ParticleEmitter::start() {
+void ParticleEmitter::start()
+{
 	started = true;
 	lastSpawned = ofGetElapsedTimeMillis();
 }
 
-void ParticleEmitter::stop() {
+void ParticleEmitter::stop()
+{
 	started = false;
 	fired = false;
+	
 }
-void ParticleEmitter::update() {
+void ParticleEmitter::update()
+{
 
 	float time = ofGetElapsedTimeMillis();
 
-	if (oneShot && started) {
-		if (!fired) {
+	if (oneShot && started)
+	{
+		if (!fired)
+		{
 
 			// spawn a new particle(s)
 			//
@@ -92,40 +104,44 @@ void ParticleEmitter::update() {
 		stop();
 	}
 
-	else if (((time - lastSpawned) > (1000.0 / rate)) && started) {
+	else if (((time - lastSpawned) > (1000.0 / rate)) && started)
+	{
 
 		// spawn a new particle(s)
 		//
-		for (int i= 0; i < groupSize; i++)
+		for (int i = 0; i < groupSize; i++)
 			spawn(time);
-	
+
 		lastSpawned = time;
 	}
 
 	sys->update();
 }
-void ParticleEmitter::setRingParameters(float minMag, float maxMag, float heightLim) {
-    minRadius = minMag;
-    maxRadius = maxMag;
-    heightLimit = heightLim;
+void ParticleEmitter::setRingParameters(float minMag, float maxMag, float heightLim)
+{
+	minRadius = minMag;
+	maxRadius = maxMag;
+	heightLimit = heightLim;
 }
 // spawn a single particle.  time is current time of birth
 //
-void ParticleEmitter::spawn(float time) {
+void ParticleEmitter::spawn(float time)
+{
 
 	Particle particle;
 
 	// set initial velocity and position
 	// based on emitter type
 	//
-	switch (type) {
+	switch (type)
+	{
 	case RadialEmitter:
 	{
 		ofVec3f dir = ofVec3f(ofRandom(-1, 1), ofRandom(-1, 1), ofRandom(-1, 1));
-		float speed = velocity.length();
-		// float speed = ofRandom(-1, 1);
 		particle.velocity = dir.getNormalized() * speed;
-		particle.position.set(position+ dir.getNormalized() * radius);
+		particle.acceleration = dir.getNormalized() * 20;
+		particle.position.set(position);
+		// particle.position.set(position+ dir.getNormalized() * radius);
 	}
 	break;
 	case SphereEmitter:
@@ -134,7 +150,7 @@ void ParticleEmitter::spawn(float time) {
 		particle.velocity = velocity;
 		particle.position.set(position + dir.getNormalized() * radius);
 	}
-		break;
+	break;
 	case DirectionalEmitter:
 		particle.velocity = velocity;
 		particle.position.set(position);
@@ -156,7 +172,6 @@ void ParticleEmitter::spawn(float time) {
 
 	break;
 	}
-
 
 	// other particle attributes
 	//
