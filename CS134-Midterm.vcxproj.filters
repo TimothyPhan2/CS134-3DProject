@@ -7,6 +7,9 @@
 		<ClCompile Include="src\main.cpp">
 			<Filter>src</Filter>
 		</ClCompile>
+		<ClCompile Include="src\Octree.cpp">
+			<Filter>src</Filter>
+		</ClCompile>
 		<ClCompile Include="src\Particle.cpp">
 			<Filter>src</Filter>
 		</ClCompile>
@@ -17,6 +20,12 @@
 			<Filter>src</Filter>
 		</ClCompile>
 		<ClCompile Include="src\TransformObject.cpp">
+			<Filter>src</Filter>
+		</ClCompile>
+		<ClCompile Include="src\Util.cpp">
+			<Filter>src</Filter>
+		</ClCompile>
+		<ClCompile Include="src\box.cc">
 			<Filter>src</Filter>
 		</ClCompile>
 		<ClCompile Include="src\main.cpp">
@@ -73,44 +82,47 @@
 			<UniqueIdentifier>{d8376475-7454-4a24-b08a-aac121d3ad6f}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons">
-			<UniqueIdentifier>{3E07092A--8B3-5-4B-80-8-789-960FB33F579D}</UniqueIdentifier>
+			<UniqueIdentifier>{A2547EFD--2D8-9-49-64-8-DFD-E5D1902CE38D}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxAssimpModelLoader">
-			<UniqueIdentifier>{DFFF88B0--0B5-2-45-9F-9-DE2-A906A4C178DD}</UniqueIdentifier>
+			<UniqueIdentifier>{169D850D--204-4-4B-FD-A-4D7-6CA1134BC8E9}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxAssimpModelLoader\src">
-			<UniqueIdentifier>{6CF94FF3--6D9-F-46-F1-A-073-EF3312F91BDA}</UniqueIdentifier>
+			<UniqueIdentifier>{9ABD9637--B07-1-41-84-B-B67-7BE78A22715D}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxAssimpModelLoader\libs">
-			<UniqueIdentifier>{2C8DC61D--2E6-5-4B-B0-A-72D-DEAFB7215D2C}</UniqueIdentifier>
+			<UniqueIdentifier>{2509AABA--C04-1-41-1B-B-826-D375BC293BF4}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxAssimpModelLoader\libs\assimp">
-			<UniqueIdentifier>{7720AE87--FCA-5-47-13-A-713-67F5E29939A6}</UniqueIdentifier>
+			<UniqueIdentifier>{1357B591--F98-D-48-10-A-BAE-AB19D0F16506}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxAssimpModelLoader\libs\assimp\include">
-			<UniqueIdentifier>{E7844C1E--C9B-E-45-EE-B-A65-2E3505136E66}</UniqueIdentifier>
+			<UniqueIdentifier>{5D6F2449--A6F-1-47-34-9-CCC-025DE8C0DCA1}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxAssimpModelLoader\libs\assimp\include\assimp">
-			<UniqueIdentifier>{0B7103C5--380-7-47-5E-B-2F0-984752CA110C}</UniqueIdentifier>
+			<UniqueIdentifier>{5453FE47--710-D-4B-16-9-E00-8EA2F232D449}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxAssimpModelLoader\libs\assimp\include\assimp\Compiler">
-			<UniqueIdentifier>{F5058445--CAE-6-4F-CF-9-414-4A7AA6AAE574}</UniqueIdentifier>
+			<UniqueIdentifier>{8B900E5E--C16-D-49-66-B-21E-70AC747224EB}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxAssimpModelLoader\libs\assimp\include\assimp\port">
-			<UniqueIdentifier>{948C3308--E5F-2-47-78-A-F5F-673F75EDD7C5}</UniqueIdentifier>
+			<UniqueIdentifier>{AC6DCE5F--27F-B-49-E6-8-BA9-8A8AB642EC7D}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxAssimpModelLoader\libs\assimp\include\assimp\port\AndroidJNI">
-			<UniqueIdentifier>{344EBC0E--1C9-D-44-E2-8-6B8-3BE48523D16A}</UniqueIdentifier>
+			<UniqueIdentifier>{2D9D3E5A--713-9-46-23-B-38B-65EC0590830D}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxGui">
-			<UniqueIdentifier>{A3698FAB--CBF-2-46-95-B-C6A-3273B04F3484}</UniqueIdentifier>
+			<UniqueIdentifier>{2880D1DB--0B5-6-4B-E3-A-004-4CAA5D862281}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxGui\src">
-			<UniqueIdentifier>{230DF1DE--5D9-2-48-20-8-541-AE026F322422}</UniqueIdentifier>
+			<UniqueIdentifier>{5A00C555--79D-6-48-73-9-FF1-759F3548E40E}</UniqueIdentifier>
 		</Filter>
 	</ItemGroup>
 	<ItemGroup>
 		<ClInclude Include="src\ofApp.h">
+			<Filter>src</Filter>
+		</ClInclude>
+		<ClInclude Include="src\Octree.h">
 			<Filter>src</Filter>
 		</ClInclude>
 		<ClInclude Include="src\Particle.h">
@@ -125,7 +137,19 @@
 		<ClInclude Include="src\TransformObject.h">
 			<Filter>src</Filter>
 		</ClInclude>
+		<ClInclude Include="src\Util.h">
+			<Filter>src</Filter>
+		</ClInclude>
+		<ClInclude Include="src\box.h">
+			<Filter>src</Filter>
+		</ClInclude>
 		<ClInclude Include="src\ofApp.h">
+			<Filter>src</Filter>
+		</ClInclude>
+		<ClInclude Include="src\ray.h">
+			<Filter>src</Filter>
+		</ClInclude>
+		<ClInclude Include="src\vector3.h">
 			<Filter>src</Filter>
 		</ClInclude>
 		<ClInclude Include="..\..\..\addons\ofxAssimpModelLoader\src\ofxAssimpAnimation.h">

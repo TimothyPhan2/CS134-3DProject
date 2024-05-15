@@ -41,7 +41,7 @@ void ParticleEmitter::init()
 	fired = false;
 	lastSpawned = 0;
 	radius = 0.5;
-	particleRadius = .03;
+	particleRadius = .09;
 	visible = true;
 	type = SpecialDiskEmitter;
 	groupSize = 70;

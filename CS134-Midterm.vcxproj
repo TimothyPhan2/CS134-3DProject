@@ -106,10 +106,13 @@
   <ItemGroup>
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\ofApp.cpp" />
+    <ClCompile Include="src\Octree.cpp" />
     <ClCompile Include="src\Particle.cpp" />
     <ClCompile Include="src\ParticleEmitter.cpp" />
     <ClCompile Include="src\ParticleSystem.cpp" />
     <ClCompile Include="src\TransformObject.cpp" />
+    <ClCompile Include="src\Util.cpp" />
+    <ClCompile Include="src\box.cc" />
     <ClCompile Include="..\..\..\addons\ofxAssimpModelLoader\src\ofxAssimpAnimation.cpp" />
     <ClCompile Include="..\..\..\addons\ofxAssimpModelLoader\src\ofxAssimpMeshHelper.cpp" />
     <ClCompile Include="..\..\..\addons\ofxAssimpModelLoader\src\ofxAssimpModelLoader.cpp" />
@@ -127,10 +130,15 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\ofApp.h" />
+    <ClInclude Include="src\Octree.h" />
     <ClInclude Include="src\Particle.h" />
     <ClInclude Include="src\ParticleEmitter.h" />
     <ClInclude Include="src\ParticleSystem.h" />
     <ClInclude Include="src\TransformObject.h" />
+    <ClInclude Include="src\Util.h" />
+    <ClInclude Include="src\box.h" />
+    <ClInclude Include="src\ray.h" />
+    <ClInclude Include="src\vector3.h" />
     <ClInclude Include="..\..\..\addons\ofxAssimpModelLoader\src\ofxAssimpAnimation.h" />
     <ClInclude Include="..\..\..\addons\ofxAssimpModelLoader\src\ofxAssimpMeshHelper.h" />
     <ClInclude Include="..\..\..\addons\ofxAssimpModelLoader\src\ofxAssimpModelLoader.h" />

@@ -14,33 +14,6 @@
 //
 void ofApp::setup()
 {
-	// Define the vertex shader code
-    // const char* vertexShaderSource = R"(
-    // #version 120
-    // attribute vec4 position;
-    // attribute vec4 color;
-    // varying vec4 vColor;
-
-    // void main() {
-    //     vColor = color;
-    //     gl_Position = position;
-    // }
-    // )";
-
-    // // Define the fragment shader code
-    // const char* fragmentShaderSource = R"(
-    // #version 120
-    // varying vec4 vColor;
-
-    // void main() {
-    //     gl_FragColor = vColor;
-    // }
-    // )";
-
-	// particleShader.setupShaderFromSource(GL_VERTEX_SHADER, vertexShaderSource);
-    // particleShader.setupShaderFromSource(GL_FRAGMENT_SHADER, fragmentShaderSource);
-    // particleShader.linkProgram();
-
 	bWireframe = false;
 	bDisplayPoints = false;
 	bAltKeyDown = false;
@@ -60,6 +33,21 @@ void ofApp::setup()
 	topCam.setPosition(0, 15, 0);
 	topCam.lookAt(glm::vec3(0, 0, 0));
 
+
+	//attempt at onboarding cam lol
+	onBoardCam.setNearClip(.1);
+	onBoardCam.setFov(65.5);
+	onBoardCam.disableMouseInput();
+	onBoardCam.setPosition(lander.getPosition().x, lander.getPosition().y, lander.getPosition().z);
+	onBoardCam.lookAt(lander.getPosition());
+	
+	// tracking cam good??
+	trackingCam.setNearClip(.1);
+	trackingCam.setFov(65.5);
+	trackingCam.setDistance(70);
+	trackingCam.disableMouseInput();
+	trackingCam.setPosition(50, 20, 0);
+	trackingCam.lookAt(lander.getPosition());
 	// set current camera;
 	//
 	theCam = &cam;
@@ -86,7 +74,7 @@ void ofApp::setup()
 
 	// load BG image
 	//
-	bBackgroundLoaded = backgroundImage.load("images/background.jpg");
+	backgroundImage.load("images/background.jpg");
 
 	octree.create(mars.getMesh(0), 20);
 	// setup rudimentary lighting
@@ -135,8 +123,68 @@ void ofApp::setup()
 	collisionEmitter.particleRadius = 0.05;
 	collisionEmitter.color = ofColor::red;
 	// spaceCraft.forces=shipGravity;
+
+
+		// texture loading
+	//
+	ofDisableArbTex();     // disable rectangular textures
+
+	// load textures
+	//
+	if (!ofLoadImage(particleTex, "images/thrusterFire.jpg")) {
+		cout << "Particle Texture File: images/thrusterFire.jpg not found" << endl;
+		ofExit();
+	}
+
+
+	// load the shader
+	//
+#ifdef TARGET_OPENGLES
+	shader.load("shaders_gles/shader");
+#else
+	shader.load("shaders/shader");
+#endif
+
+
+
 }
 
+void ofApp::loadThrusterVbo() {
+	if (thrusterEmitter.sys->particles.size() < 1) return;
+
+	vector<ofVec3f> sizes;
+	vector<ofVec3f> points;
+
+	for (int i = 0; i < thrusterEmitter.sys->particles.size(); i++) {
+		points.push_back(thrusterEmitter.sys->particles[i].position);
+		sizes.push_back(ofVec3f(10));
+	}
+
+	// upload the data to the vbo
+	//
+	int total = (int)points.size();
+	thrusterVBO.clear();
+	thrusterVBO.setVertexData(&points[0], total, GL_STATIC_DRAW);
+	thrusterVBO.setNormalData(&sizes[0], total, GL_STATIC_DRAW);
+}
+
+void ofApp::loadExplosionVbo() {
+		if (collisionEmitter.sys->particles.size() < 1) return;
+
+	vector<ofVec3f> sizes;
+	vector<ofVec3f> points;
+
+	for (int i = 0; i < collisionEmitter.sys->particles.size(); i++) {
+		points.push_back(collisionEmitter.sys->particles[i].position);
+		sizes.push_back(ofVec3f(10));
+	}
+
+	// upload the data to the vbo
+	int total = (int)points.size();
+	explosionVBO.clear();
+	explosionVBO.setVertexData(&points[0], total, GL_STATIC_DRAW);
+	explosionVBO.setNormalData(&sizes[0], total, GL_STATIC_DRAW);
+}
 void ofApp::startThruster(ParticleEmitter &emitter)
 {
 	emitter.start();
@@ -233,7 +281,7 @@ void ofApp::update()
 	if (isCollided)
 	{
 		float landingForce = getLandingForce(spaceCraft.velocity);
-		// cout << "landing force: " << landingForce << endl;s
+		cout << "landing force: " << landingForce << endl;
 		if (landingForce > baseLandingForce)
 		{
 			catapultShip = true;
@@ -242,25 +290,29 @@ void ofApp::update()
 	reverseLanderMovement();
 	collisionEmitter.start();
 	collisionEmitter.update();
+
+	onBoardCam.setPosition(spaceCraft.position.x, spaceCraft.position.y, spaceCraft.position.z);
+	onBoardCam.lookAt(spaceCraft.position);
+
+	trackingCam.lookAt(ofVec3f(spaceCraft.position.x + 10, spaceCraft.position.y, spaceCraft.position.z));
 }
 
 //--------------------------------------------------------------
 void ofApp::draw()
 {
-
+	loadExplosionVbo();
+	loadThrusterVbo();
 	// draw background image
 	//
-	if (bBackgroundLoaded)
-	{
-		ofPushMatrix();
-		ofDisableDepthTest();
-		ofSetColor(50, 50, 50);
-		ofScale(2, 2);
-		backgroundImage.draw(-200, -100);
-		ofEnableDepthTest();
-		ofPopMatrix();
-	}
 
+	glDepthMask(false);
+	ofSetColor(255, 255, 255);
+	backgroundImage.draw(0, 0, ofGetWindowWidth(), ofGetWindowHeight());
+	if (!bHide) gui.draw();
+	glDepthMask(true);
+
+
+	
 	theCam->begin();
 
 	ofPushMatrix();
@@ -292,6 +344,7 @@ void ofApp::draw()
 		{
 			// lander.setRotation(0, angle, 0, 1, 0);
 			lander.drawFaces();
+			
 			if (!bTerrainSelected)
 				drawAxis(lander.getPosition());
 
@@ -326,6 +379,7 @@ void ofApp::draw()
 			}
 		}
 	}
+	
 	if (bTerrainSelected)
 		drawAxis(ofVec3f(0, 0, 0));
 
@@ -343,22 +397,56 @@ void ofApp::draw()
 		octree.draw(numLevels, 0);
 	}
 
-	ofPopMatrix();
 
-	// particleShader.begin();
-	// groundedEmitter.draw();
-	thrusterEmitter.draw();
-	if (catapultShip)
-	{
-		collisionEmitter.draw();
-	}
-	// particleShader.end();
-	theCam->end();
 
-	ofDisableDepthTest();
+
 	ofDisableLighting();
-	gui.draw();
-	ofEnableDepthTest();
+
+	ofPopMatrix();
+	
+	theCam->end();
+	
+
+
+	glDepthMask(GL_FALSE);
+
+	
+
+	// this makes everything look glowy :)
+	//
+	ofEnableBlendMode(OF_BLENDMODE_ADD);
+	ofEnablePointSprites();
+
+
+	// begin drawing in the camera
+	//
+	shader.begin();
+	theCam->begin();
+
+	
+	particleTex.bind();
+	thrusterVBO.draw(GL_POINTS, 0, (int)thrusterEmitter.sys->particles.size());
+	particleTex.unbind();
+
+	if (catapultShip) {
+		particleTex.bind();
+		explosionVBO.draw(GL_POINTS, 0, (int)collisionEmitter.sys->particles.size());
+		particleTex.unbind();
+	}
+	
+
+
+
+	theCam->end();
+	shader.end();
+
+	ofDisablePointSprites();
+	ofDisableBlendMode();
+	ofEnableAlphaBlending();
+
+	// set back the depth mask
+	//
+	glDepthMask(GL_TRUE);
 
 	// draw screen data
 	//
@@ -450,10 +538,10 @@ void ofApp::keyPressed(int key)
 		break;
 	case 'C':
 	case 'c':
-		if (cam.getMouseInputEnabled())
-			cam.disableMouseInput();
+		if (theCam->getMouseInputEnabled())
+			theCam ->disableMouseInput();
 		else
-			cam.enableMouseInput();
+			theCam ->enableMouseInput();
 		break;
 	case 'F':
 	case 'f':
@@ -461,6 +549,7 @@ void ofApp::keyPressed(int key)
 		break;
 	case 'H':
 	case 'h':
+		theCam = &onBoardCam;
 		break;
 	case 'O':
 	case 'o':
@@ -468,6 +557,7 @@ void ofApp::keyPressed(int key)
 		break;
 	case 'P':
 	case 'p':
+		theCam = &trackingCam;
 		break;
 	case 'r':
 		cam.reset();

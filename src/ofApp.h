@@ -34,11 +34,12 @@ public:
 	void togglePointsDisplay();
 
 	ofEasyCam cam;
+	ofEasyCam trackingCam, onBoardCam, topCam;
 	ofxAssimpModelLoader lander, mars;
 	ofLight light;
 	ofImage backgroundImage;
-	ofCamera *theCam = NULL;
-	ofCamera topCam;
+	ofEasyCam *theCam;
+	
 
 	ofVec3f headingVec;
 	float headingSpeed = 5.0f;
@@ -76,11 +77,13 @@ public:
 	ofxToggle groundHeight;
 
 	void startThruster(ParticleEmitter &emitter);
-	// ofShader shader;
+	void loadThrusterVbo();
+	void loadExplosionVbo();
 
 	bool bLanderSelected = false;
 	bool bTerrainSelected;
 	bool bInDrag = false;
+	bool bHide;
 	glm::vec3 mouseDownPos, mouseLastPos;
 	bool bDisplayOctree = false;
 	bool bDisplayBBoxes = true;
@@ -126,5 +129,12 @@ public:
 	ImpulseRadialForce *radialForce;
 	bool restartBool=true;
 	ofVec3f shipGravity;
-	// ofShader particleShader;
+	
+	// textures
+	ofTexture  particleTex;
+
+	// shaders
+	ofVbo thrusterVBO, explosionVBO;
+
+	ofShader shader;
 };
