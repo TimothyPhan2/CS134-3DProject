@@ -46,7 +46,7 @@ void ofApp::setup()
 	trackingCam.setFov(65.5);
 	trackingCam.setDistance(70);
 	trackingCam.disableMouseInput();
-	trackingCam.setPosition(50, 20, 0);
+	trackingCam.setPosition(70, 40, 0);
 	trackingCam.lookAt(lander.getPosition());
 	// set current camera;
 	//
@@ -54,7 +54,7 @@ void ofApp::setup()
 
 	// setup rudimentary lighting
 	//
-	initLightingAndMaterials();
+	/*initLightingAndMaterials();*/
 
 	mars.loadModel("geo/moon-houdini.obj");
 	// mars.loadModel("geo/mars-low-5x-v2.obj");
@@ -147,6 +147,47 @@ void ofApp::setup()
 
 
 
+	// setup lights
+
+	keyLight.setup();
+	keyLight.enable();
+	keyLight.setAreaLight(1, 1);
+	keyLight.setAmbientColor(ofFloatColor(0.1, 0.1, 0.1));
+	keyLight.setDiffuseColor(ofFloatColor(1, 1, 1));
+	keyLight.setSpecularColor(ofFloatColor(1, 1, 1));
+
+	keyLight.rotate(45, ofVec3f(0, 1, 0));
+	keyLight.rotate(-45, ofVec3f(1, 0, 0));
+	keyLight.setPosition(5, 5, 5);
+
+	fillLight.setup();
+	fillLight.enable();
+	fillLight.setSpotlight();
+	fillLight.setScale(.05);
+	fillLight.setSpotlightCutOff(15);
+	fillLight.setAttenuation(2, .001, .001);
+	fillLight.setAmbientColor(ofFloatColor(0.1, 0.1, 0.1));
+	fillLight.setDiffuseColor(ofFloatColor(1, 1, 1));
+	fillLight.setSpecularColor(ofFloatColor(1, 1, 1));
+	fillLight.rotate(-10, ofVec3f(1, 0, 0));
+	fillLight.rotate(-45, ofVec3f(0, 1, 0));
+	fillLight.setPosition(-5, 5, 5);
+
+	rimLight.setup();
+	rimLight.enable();
+	rimLight.setSpotlight();
+	rimLight.setScale(.05);
+	rimLight.setSpotlightCutOff(30);
+	rimLight.setAttenuation(.2, .001, .001);
+	rimLight.setAmbientColor(ofFloatColor(0.1, 0.1, 0.1));
+	rimLight.setDiffuseColor(ofFloatColor(1, 1, 1));
+	rimLight.setSpecularColor(ofFloatColor(1, 1, 1));
+	rimLight.rotate(180, ofVec3f(0, 1, 0));
+	rimLight.setPosition(0, 5, -7);
+
+	
+	explosionSound.load("sounds/explosion.wav");
+	thrusterSound.load("sounds/thruster.wav");
 }
 
 void ofApp::loadThrusterVbo() {
@@ -189,11 +230,12 @@ void ofApp::startThruster(ParticleEmitter &emitter)
 {
 	emitter.start();
 	emitter.oneShot = true;
+	fuel -= 1;
 }
 
 void ofApp::update()
 {
-
+	
 	headingVec = ofVec3f(0, 0, 0);
 	spaceCraft.forces = shipGravity;
 	spaceCraft.setPosition(lander.getPosition());
@@ -294,7 +336,14 @@ void ofApp::update()
 	onBoardCam.setPosition(spaceCraft.position.x, spaceCraft.position.y, spaceCraft.position.z);
 	onBoardCam.lookAt(spaceCraft.position);
 
-	trackingCam.lookAt(ofVec3f(spaceCraft.position.x + 10, spaceCraft.position.y, spaceCraft.position.z));
+	trackingCam.lookAt(ofVec3f(spaceCraft.position.x + 10, spaceCraft.position.y , spaceCraft.position.z));
+
+
+	// update fuel
+	if (fuel <= 0) {
+		thrusterEmitter.stop();
+		//game over maybe need a boolean?
+	}
 }
 
 //--------------------------------------------------------------
@@ -585,9 +634,11 @@ void ofApp::keyPressed(int key)
 		break;
 	case 'w': // spacecraft thrust UP
 		thrustUp = true;
+		thrusterSound.play();
 		break;
 	case 's': // spacefraft thrust DOWN
 		thrustDown = true;
+		thrusterSound.play();
 		break;
 	case OF_KEY_F1:
 		theCam = &cam;
@@ -608,15 +659,19 @@ void ofApp::keyPressed(int key)
 		break;
 	case OF_KEY_UP: // move forward
 		moveUp = true;
+		thrusterSound.play();
 		break;
 	case OF_KEY_DOWN: // move backward
 		moveDown = true;
+		thrusterSound.play();
 		break;
 	case OF_KEY_LEFT: // move left
 		moveLeft = true;
+		thrusterSound.play();
 		break;
 	case OF_KEY_RIGHT: // move right
 		moveRight = true;
+		thrusterSound.play();
 		break;
 	case ' ':
 		restart();
@@ -674,15 +729,19 @@ void ofApp::keyReleased(int key)
 		break;
 	case OF_KEY_UP: // move forward
 		moveUp = false;
+		thrusterSound.stop();
 		break;
 	case OF_KEY_DOWN: // move backward
 		moveDown = false;
+		thrusterSound.stop();
 		break;
 	case OF_KEY_LEFT: // move left
 		moveLeft = false;
+		thrusterSound.stop();
 		break;
 	case OF_KEY_RIGHT: // move right
 		moveRight = false;
+		thrusterSound.stop();
 		break;
 	case 'd': // rotate spacecraft clockwise (about Y (UP) axis)
 		clockwiseRot = false;
@@ -692,9 +751,11 @@ void ofApp::keyReleased(int key)
 		break;
 	case 'w': // spacecraft thrust UP
 		thrustUp = false;
+		thrusterSound.stop();
 		break;
 	case 's': // spacefraft thrust DOWN
 		thrustDown = false;
+		thrusterSound.stop();
 		break;
 	case 'x':
 		// groundedEmitter.stop();

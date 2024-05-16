@@ -82,40 +82,40 @@
 			<UniqueIdentifier>{d8376475-7454-4a24-b08a-aac121d3ad6f}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons">
-			<UniqueIdentifier>{A2547EFD--2D8-9-49-64-8-DFD-E5D1902CE38D}</UniqueIdentifier>
+			<UniqueIdentifier>{E48A4017--D29-5-4C-B2-B-02D-CF9BC53803D3}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxAssimpModelLoader">
-			<UniqueIdentifier>{169D850D--204-4-4B-FD-A-4D7-6CA1134BC8E9}</UniqueIdentifier>
+			<UniqueIdentifier>{E1BF2F84--4FD-A-48-3F-9-D66-1A48CEB6DDAE}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxAssimpModelLoader\src">
-			<UniqueIdentifier>{9ABD9637--B07-1-41-84-B-B67-7BE78A22715D}</UniqueIdentifier>
+			<UniqueIdentifier>{9ECEB447--A0A-6-4E-C2-8-665-F55C2C80D4CD}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxAssimpModelLoader\libs">
-			<UniqueIdentifier>{2509AABA--C04-1-41-1B-B-826-D375BC293BF4}</UniqueIdentifier>
+			<UniqueIdentifier>{D2C14AEF--728-9-4B-CC-A-023-F7F4FC403297}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxAssimpModelLoader\libs\assimp">
-			<UniqueIdentifier>{1357B591--F98-D-48-10-A-BAE-AB19D0F16506}</UniqueIdentifier>
+			<UniqueIdentifier>{4F74CAEC--2AC-D-4F-16-A-038-C513180FD23D}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxAssimpModelLoader\libs\assimp\include">
-			<UniqueIdentifier>{5D6F2449--A6F-1-47-34-9-CCC-025DE8C0DCA1}</UniqueIdentifier>
+			<UniqueIdentifier>{3B56EE56--F3D-A-46-ED-9-0FA-0689B4AA4103}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxAssimpModelLoader\libs\assimp\include\assimp">
-			<UniqueIdentifier>{5453FE47--710-D-4B-16-9-E00-8EA2F232D449}</UniqueIdentifier>
+			<UniqueIdentifier>{DCCE4293--7F8-B-4E-48-B-BF4-5D19429B0942}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxAssimpModelLoader\libs\assimp\include\assimp\Compiler">
-			<UniqueIdentifier>{8B900E5E--C16-D-49-66-B-21E-70AC747224EB}</UniqueIdentifier>
+			<UniqueIdentifier>{F8E7D149--B5F-D-4A-D6-A-EF4-E2FB956A7BBD}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxAssimpModelLoader\libs\assimp\include\assimp\port">
-			<UniqueIdentifier>{AC6DCE5F--27F-B-49-E6-8-BA9-8A8AB642EC7D}</UniqueIdentifier>
+			<UniqueIdentifier>{6E0EEC24--989-1-48-28-9-CA7-15EF934FC6C1}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxAssimpModelLoader\libs\assimp\include\assimp\port\AndroidJNI">
-			<UniqueIdentifier>{2D9D3E5A--713-9-46-23-B-38B-65EC0590830D}</UniqueIdentifier>
+			<UniqueIdentifier>{5EBAE644--3E8-D-48-BA-9-5BF-B1478669771E}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxGui">
-			<UniqueIdentifier>{2880D1DB--0B5-6-4B-E3-A-004-4CAA5D862281}</UniqueIdentifier>
+			<UniqueIdentifier>{7D703942--22A-9-40-4A-8-F97-5236176D903E}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxGui\src">
-			<UniqueIdentifier>{5A00C555--79D-6-48-73-9-FF1-759F3548E40E}</UniqueIdentifier>
+			<UniqueIdentifier>{FEE10E36--224-D-44-15-B-6E8-1DE1554B724D}</UniqueIdentifier>
 		</Filter>
 	</ItemGroup>
 	<ItemGroup>

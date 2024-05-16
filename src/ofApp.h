@@ -12,6 +12,7 @@ class ofApp : public ofBaseApp
 {
 
 public:
+	
 	void setup();
 	void update();
 	void draw();
@@ -40,7 +41,7 @@ public:
 	ofImage backgroundImage;
 	ofEasyCam *theCam;
 	
-
+	
 	ofVec3f headingVec;
 	float headingSpeed = 5.0f;
 	bool bAltKeyDown;
@@ -137,4 +138,11 @@ public:
 	ofVbo thrusterVBO, explosionVBO;
 
 	ofShader shader;
+
+	int fuel = 120000; // 2 minutes of fuel in milliseconds
+
+	ofLight keyLight, fillLight, rimLight;
+
+	ofSoundPlayer explosionSound;
+	ofSoundPlayer thrusterSound;
 };
