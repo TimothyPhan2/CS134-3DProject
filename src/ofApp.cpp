@@ -523,6 +523,9 @@ void ofApp::draw()
 	{
 		string str3;
 		gHeight = lander.getPosition().y - raySelectWithOctree();
+		if(gHeight<0){
+			gHeight = - gHeight;
+		}
 		str3 += "Ground Height: " + std::to_string(gHeight);
 		ofSetColor(ofColor::white);
 		ofDrawBitmapString(str3, ofGetWindowWidth() - 170, 30);
