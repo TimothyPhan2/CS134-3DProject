@@ -14,40 +14,16 @@
 //
 void ofApp::setup()
 {
-	// Define the vertex shader code
-    // const char* vertexShaderSource = R"(
-    // #version 120
-    // attribute vec4 position;
-    // attribute vec4 color;
-    // varying vec4 vColor;
-
-    // void main() {
-    //     vColor = color;
-    //     gl_Position = position;
-    // }
-    // )";
-
-    // // Define the fragment shader code
-    // const char* fragmentShaderSource = R"(
-    // #version 120
-    // varying vec4 vColor;
-
-    // void main() {
-    //     gl_FragColor = vColor;
-    // }
-    // )";
-
-	// particleShader.setupShaderFromSource(GL_VERTEX_SHADER, vertexShaderSource);
-    // particleShader.setupShaderFromSource(GL_FRAGMENT_SHADER, fragmentShaderSource);
-    // particleShader.linkProgram();
-
 	bWireframe = false;
 	bDisplayPoints = false;
 	bAltKeyDown = false;
 	bCtrlKeyDown = false;
 	bLanderLoaded = false;
 	bTerrainSelected = true;
-	cam.setDistance(10);
+	landPlace1.set(-55, 11.3, 28);
+	landPlace2.set(48, 24.5, 39.2);
+	landPlace3.set(7.4, -7.3, -44);
+	cam.setDistance(30);
 	cam.setNearClip(.1);
 	cam.setFov(65.5); // approx equivalent to 28mm in 35mm format
 	// ofSetVerticalSync(true);
@@ -60,23 +36,30 @@ void ofApp::setup()
 	topCam.setPosition(0, 15, 0);
 	topCam.lookAt(glm::vec3(0, 0, 0));
 
+	// attempt at onboarding cam lol
+	onBoardCam.setNearClip(.1);
+	onBoardCam.setFov(65.5);
+	onBoardCam.disableMouseInput();
+	onBoardCam.setPosition(lander.getPosition().x, lander.getPosition().y, lander.getPosition().z);
+	// onBoardCam.lookAt(lander.getPosition());
+	onBoardCam.lookAt(glm::vec3(lander.getPosition().x, -100, lander.getPosition().z));
+
+	// tracking cam good??
+	trackingCam.setNearClip(.1);
+	trackingCam.setFov(65.5);
+	trackingCam.setDistance(70);
+	trackingCam.disableMouseInput();
+	trackingCam.setPosition(70, 40, 0);
+	trackingCam.lookAt(lander.getPosition());
+
 	// set current camera;
 	//
 	theCam = &cam;
 
-	// setup rudimentary lighting
-	//
-	initLightingAndMaterials();
-
-	mars.loadModel("geo/moon-houdini.obj");
-	// mars.loadModel("geo/mars-low-5x-v2.obj");
+	mars.loadModel("geo/desert5.obj");
 	mars.setScaleNormalization(false);
 
 	gui.setup();
-	// gui.add(velocity.setup("Velocity", ofVec3f(0, -20, 0), ofVec3f(0, -30, 0), ofVec3f(100, 100, 100)));
-	// gui.add(lifespan.setup("Lifespan", 3.0, .1, 10.0));
-	// gui.add(rate.setup("Rate", 1.0, .5, 60.0));
-	// gui.add(radius.setup("Disk Radius", 0.5, .1, 10.0));
 	gui.add(numLevels.setup("Number of Octree Levels", 1, 1, 10));
 	gui.add(groundHeight.setup("Ground Height", false));
 
@@ -87,12 +70,17 @@ void ofApp::setup()
 	// load BG image
 	//
 	bBackgroundLoaded = backgroundImage.load("images/background.jpg");
+	if (winImg.load("images/HappyFace.png"))
+	{
+		winImgLoaded = true;
+	}
+	else
+	{
+		cout << "Can't open player image file" << endl;
+	}
 
-	octree.create(mars.getMesh(0), 20);
-	// setup rudimentary lighting
-	//
-	// initLightingAndMaterials();
-	cout << "Number of Verts: " << mars.getMesh(0).getNumVertices() << endl;
+	octree.create(mars.getMesh(1), 20);
+	cout << "Number of Verts: " << mars.getMesh(1).getNumVertices() << endl;
 
 	// load lander model
 	//
@@ -135,12 +123,141 @@ void ofApp::setup()
 	collisionEmitter.particleRadius = 0.05;
 	collisionEmitter.color = ofColor::red;
 	// spaceCraft.forces=shipGravity;
+
+	// texture loading
+	//
+	ofDisableArbTex(); // disable rectangular textures
+
+	// load textures
+	//
+	if (!ofLoadImage(particleTex1, "images/red.jpg"))
+	{
+		cout << "Particle Texture File1: images/thrusterFire.jpg not found" << endl;
+		ofExit();
+	}
+	if (!ofLoadImage(particleTex2, "images/1.jpg"))
+	{
+		// if (!ofLoadImage(particleTex2, "images/red_background.jpg")) {
+		cout << "Particle Texture File2: images/thrusterFire.jpg not found" << endl;
+		ofExit();
+	}
+
+	// load the shader
+	//
+#ifdef TARGET_OPENGLES
+	shader.load("shaders_gles/shader");
+#else
+	shader.load("shaders/shader");
+#endif
+
+	// setup lights
+
+	keyLight.setup();
+	keyLight.enable();
+	keyLight.setAreaLight(1, 1);
+	keyLight.setAmbientColor(ofFloatColor(0.1, 0.1, 0.1));
+	keyLight.setDiffuseColor(ofFloatColor(1, 1, 1));
+	keyLight.setSpecularColor(ofFloatColor(1, 1, 1));
+
+	keyLight.rotate(45, ofVec3f(0, 1, 0));
+	keyLight.rotate(-45, ofVec3f(1, 0, 0));
+	// keyLight.setPosition(5, 5, 5);
+	keyLight.setPosition(20, 70, 30);
+
+	fillLight.setup();
+	fillLight.enable();
+	fillLight.setSpotlight();
+	fillLight.setScale(.05);
+	fillLight.setSpotlightCutOff(15);
+	fillLight.setAttenuation(2, .001, .001);
+	fillLight.setAmbientColor(ofFloatColor(0.1, 0.1, 0.1));
+	fillLight.setDiffuseColor(ofFloatColor(1, 1, 1));
+	fillLight.setSpecularColor(ofFloatColor(1, 1, 1));
+	fillLight.rotate(-10, ofVec3f(1, 0, 0));
+	fillLight.rotate(-45, ofVec3f(0, 1, 0));
+	// fillLight.setPosition(-5, 5, 5);
+	fillLight.setPosition(-50, 20, 40);
+
+	rimLight.setup();
+	rimLight.enable();
+	rimLight.setSpotlight();
+	rimLight.setScale(.05);
+	rimLight.setSpotlightCutOff(30);
+	rimLight.setAttenuation(.2, .001, .001);
+	rimLight.setAmbientColor(ofFloatColor(0.1, 0.1, 0.1));
+	rimLight.setDiffuseColor(ofFloatColor(1, 1, 1));
+	rimLight.setSpecularColor(ofFloatColor(1, 1, 1));
+	rimLight.rotate(135, ofVec3f(0, 1, 0));
+	rimLight.rotate(-20, ofVec3f(1, 0, 0));
+	// fillLight.rotate(-45, ofVec3f(0, 1, 0));
+	// rimLight.setPosition(0, 5, -7);
+	rimLight.setPosition(20, 40, -40);
+
+	explosionSound.load("sounds/explosion.mp3");
+	thrusterSound.load("sounds/thruster2.mp3");
+	gameOverSound.load("sounds/gameOver.wav");
+	gameWinSound.load("sounds/gameWin.wav");
+	backgroudSound.load("sounds/background.mp3");
+	backgroudSound.setLoop(true);
+
+	fuelTime = maxFuelTime;
+	restart();
+}
+
+void ofApp::loadThrusterVbo()
+{
+	if (thrusterEmitter.sys->particles.size() < 1)
+		return;
+
+	vector<ofVec3f> sizes;
+	vector<ofVec3f> points;
+
+	for (int i = 0; i < thrusterEmitter.sys->particles.size(); i++)
+	{
+		points.push_back(thrusterEmitter.sys->particles[i].position);
+		sizes.push_back(ofVec3f(10));
+	}
+
+	// upload the data to the vbo
+	//
+	int total = (int)points.size();
+	thrusterVBO.clear();
+	thrusterVBO.setVertexData(&points[0], total, GL_STATIC_DRAW);
+	thrusterVBO.setNormalData(&sizes[0], total, GL_STATIC_DRAW);
+	// explosionVBO.setColorData(&particleColors1[0], total, GL_STATIC_DRAW);
+}
+
+void ofApp::loadExplosionVbo()
+{
+	if (collisionEmitter.sys->particles.size() < 1)
+		return;
+
+	vector<ofVec3f> sizes;
+	vector<ofVec3f> points;
+
+	for (int i = 0; i < collisionEmitter.sys->particles.size(); i++)
+	{
+		points.push_back(collisionEmitter.sys->particles[i].position);
+		sizes.push_back(ofVec3f(10));
+	}
+
+	// upload the data to the vbo
+	int total = (int)points.size();
+	explosionVBO.clear();
+	explosionVBO.setVertexData(&points[0], total, GL_STATIC_DRAW);
+	explosionVBO.setNormalData(&sizes[0], total, GL_STATIC_DRAW);
 }
 
 void ofApp::startThruster(ParticleEmitter &emitter)
 {
+	float fuelConsumptionRate = 1; // each sec consum 1
 	emitter.start();
 	emitter.oneShot = true;
+	fuelTime -= fuelConsumptionRate * ofGetLastFrameTime();
+	if (!thrusterSound.isPlaying())
+	{
+		thrusterSound.play();
+	}
 }
 
 void ofApp::update()
@@ -149,6 +266,7 @@ void ofApp::update()
 	headingVec = ofVec3f(0, 0, 0);
 	spaceCraft.forces = shipGravity;
 	spaceCraft.setPosition(lander.getPosition());
+	// cout<< "pos: x:"<<lander.getPosition().x<<" y:"<<lander.getPosition().y<<" z:"<<lander.getPosition().z<<endl;
 	checkCollision();
 	if (!bInDrag && !catapultShip && !isCollided && restartBool)
 	{
@@ -224,7 +342,7 @@ void ofApp::update()
 		lastMovementDirection = currentPosition - lastPosition;
 		lastMovementDirection = glm::normalize(lastMovementDirection);
 	}
-
+	// cout <<"p:"<<spaceCraft.position.y<<endl;
 	lastPosition = currentPosition;
 	if (spaceCraft.position.y < getGroundHeight)
 	{
@@ -239,32 +357,38 @@ void ofApp::update()
 			catapultShip = true;
 		}
 	}
+	// cout <<"v:"<<spaceCraft.velocity.y<<endl;
 	reverseLanderMovement();
 	collisionEmitter.start();
 	collisionEmitter.update();
+
+	onBoardCam.setPosition(spaceCraft.position.x, spaceCraft.position.y, spaceCraft.position.z);
+	onBoardCam.lookAt(spaceCraft.position);
+
+	trackingCam.lookAt(ofVec3f(spaceCraft.position.x + 10, spaceCraft.position.y, spaceCraft.position.z));
 }
 
 //--------------------------------------------------------------
 void ofApp::draw()
 {
-
+	loadExplosionVbo();
+	loadThrusterVbo();
 	// draw background image
 	//
-	if (bBackgroundLoaded)
-	{
-		ofPushMatrix();
-		ofDisableDepthTest();
-		ofSetColor(50, 50, 50);
-		ofScale(2, 2);
-		backgroundImage.draw(-200, -100);
-		ofEnableDepthTest();
-		ofPopMatrix();
-	}
+
+	glDepthMask(false);
+	ofSetColor(255, 255, 255);
+	backgroundImage.draw(0, 0, ofGetWindowWidth(), ofGetWindowHeight());
+	if (!bHide)
+		gui.draw();
+	glDepthMask(true);
 
 	theCam->begin();
 
 	ofPushMatrix();
-
+	// keyLight.draw();
+	// fillLight.draw();
+	// rimLight.draw();
 	if (bWireframe)
 	{ // wireframe mode  (include axis)
 		ofDisableLighting();
@@ -287,7 +411,7 @@ void ofApp::draw()
 	{
 		ofEnableLighting(); // shaded mode
 		mars.drawFaces();
-		ofMesh mesh;
+		// ofMesh mesh;
 		if (bLanderLoaded)
 		{
 			// lander.setRotation(0, angle, 0, 1, 0);
@@ -342,23 +466,45 @@ void ofApp::draw()
 		// ofSetColor(ofColor::white);
 		octree.draw(numLevels, 0);
 	}
-
+	ofDisableLighting();
 	ofPopMatrix();
-
-	// particleShader.begin();
-	// groundedEmitter.draw();
-	thrusterEmitter.draw();
-	if (catapultShip)
-	{
-		collisionEmitter.draw();
-	}
-	// particleShader.end();
 	theCam->end();
 
-	ofDisableDepthTest();
-	ofDisableLighting();
-	gui.draw();
-	ofEnableDepthTest();
+	glDepthMask(GL_FALSE);
+
+	// this makes everything look glowy :)
+	//
+	ofEnableBlendMode(OF_BLENDMODE_ADD);
+	ofEnablePointSprites();
+
+	// begin drawing in the camera
+	//
+	shader.begin();
+	theCam->begin();
+
+	particleTex2.bind();
+	// explosionVBO.enableColors();
+	thrusterVBO.draw(GL_POINTS, 0, (int)thrusterEmitter.sys->particles.size());
+	// explosionVBO.disableColors();
+	particleTex2.unbind();
+
+	if (catapultShip)
+	{
+		particleTex1.bind();
+		explosionVBO.draw(GL_POINTS, 0, (int)collisionEmitter.sys->particles.size());
+		particleTex1.unbind();
+	}
+
+	theCam->end();
+	shader.end();
+
+	ofDisablePointSprites();
+	ofDisableBlendMode();
+	ofEnableAlphaBlending();
+
+	// set back the depth mask
+	//
+	glDepthMask(GL_TRUE);
 
 	// draw screen data
 	//
@@ -367,8 +513,9 @@ void ofApp::draw()
 	ofSetColor(ofColor::white);
 	ofDrawBitmapString(str, ofGetWindowWidth() - 170, 15);
 
+	// string str2;
 	string str2;
-	str2 += "Altitide (AGL): " + std::to_string(lander.getPosition().y);
+	str2 = "Fuel time remaining: " + std::to_string(fuelTime) + "/";
 	ofSetColor(ofColor::white);
 	ofDrawBitmapString(str2, 5, 15);
 
@@ -384,23 +531,61 @@ void ofApp::draw()
 	ofSetColor(ofColor::red);
 	ofDrawBitmapString(str41, ofGetWindowWidth() / 2 - 15, 30);
 	float sp = spaceCraft.velocity.length();
-	if ((sp < 0.01 && gHeight < 0.4 && gHeight > 0.1))
+	// if ((sp < 0.05 && gHeight < 0.4 && gHeight > 0.1))
+	isInLandArea();
+	if ((sp < 0.5 && inLandArea && !isCollided))
+	// if (isCollided && !catapultShip)
 	{
+		backgroudSound.stop();
+		// playingWinSound = true;
+		if (!gameWinSound.isPlaying())
+		{
+			gameWinSound.play();
+		}
 		string str4 = "Game Over! Win!";
 		ofSetColor(ofColor::red);
 		ofDrawBitmapString(str4, ofGetWindowWidth() / 2 - 15, 15);
-		restart();
+		// restart();
+		spaceCraft.velocity.set(0, 0, 0);
+		spaceCraft.acceleration.set(0, 0, 0);
 		restartBool = false;
+		float windowWidth = ofGetWidth();
+		float windowHeight = ofGetHeight();
+		float imgWidth = winImg.getWidth() * 8;
+		float imgHeight = winImg.getHeight() * 8;
+
+		float xPos = (windowWidth - imgWidth) / 2;
+		float yPos = (windowHeight - imgHeight) / 2;
+		winImg.draw(xPos, yPos, imgWidth, imgHeight);
+		// cout<< "win: pos: x:"<<lander.getPosition().x<<" y:"<<lander.getPosition().y<<" z:"<<lander.getPosition().z<<endl;
+
 		// ofDrawBitmapString(str41, ofGetWindowWidth()/2 - 15, 30);
 	}
-	else if (catapultShip)
+	else if (catapultShip || fuelTime <= 0)
 	{
+		backgroudSound.stop();
+		if (catapultShip && playingExplosionSound)
+		{
+			explosionSound.setVolume(0.3);
+			explosionSound.play();
+			playingExplosionSound = false;
+		}
 		string str5 = "Game Over! Lose!";
 		ofSetColor(ofColor::red);
 		ofDrawBitmapString(str5, ofGetWindowWidth() / 2 - 15, 15);
-		if (sp > 1000)
+		if (sp > 2500 || fuelTime <= 0)
 		{
-			restart();
+			fuelTime = 0;
+			catapultShip = false;
+			collisionEmitter.stop();
+			if (playingGamenOverSound)
+			{
+				gameOverSound.play();
+				playingGamenOverSound = false;
+			}
+			lander.setPosition(0, 0.5, 0);
+			spaceCraft.velocity.set(0, 0, 0);
+			spaceCraft.acceleration.set(0, 0, 0);
 			restartBool = false;
 		}
 	}
@@ -441,7 +626,6 @@ float ofApp::getLandingForce(ofVec3f vel)
 
 void ofApp::keyPressed(int key)
 {
-
 	switch (key)
 	{
 	case 'B':
@@ -461,6 +645,7 @@ void ofApp::keyPressed(int key)
 		break;
 	case 'H':
 	case 'h':
+		theCam = &onBoardCam;
 		break;
 	case 'O':
 	case 'o':
@@ -468,6 +653,7 @@ void ofApp::keyPressed(int key)
 		break;
 	case 'P':
 	case 'p':
+		theCam = &trackingCam;
 		break;
 	case 'r':
 		cam.reset();
@@ -551,6 +737,12 @@ void ofApp::restart()
 	collisionEmitter.setPosition(spaceCraft.position);
 	collisionEmitter.stop();
 	restartBool = true;
+	explosionSound.stop();
+	backgroudSound.play();
+	gameOverSound.stop();
+	gameWinSound.stop();
+	playingGamenOverSound = true;
+	playingExplosionSound = true;
 }
 
 void ofApp::toggleWireframeMode()
@@ -584,15 +776,19 @@ void ofApp::keyReleased(int key)
 		break;
 	case OF_KEY_UP: // move forward
 		moveUp = false;
+		thrusterSound.stop();
 		break;
 	case OF_KEY_DOWN: // move backward
 		moveDown = false;
+		thrusterSound.stop();
 		break;
 	case OF_KEY_LEFT: // move left
 		moveLeft = false;
+		thrusterSound.stop();
 		break;
 	case OF_KEY_RIGHT: // move right
 		moveRight = false;
+		thrusterSound.stop();
 		break;
 	case 'd': // rotate spacecraft clockwise (about Y (UP) axis)
 		clockwiseRot = false;
@@ -602,9 +798,11 @@ void ofApp::keyReleased(int key)
 		break;
 	case 'w': // spacecraft thrust UP
 		thrustUp = false;
+		thrusterSound.stop();
 		break;
 	case 's': // spacefraft thrust DOWN
 		thrustDown = false;
+		thrusterSound.stop();
 		break;
 	case 'x':
 		// groundedEmitter.stop();
@@ -816,6 +1014,7 @@ void ofApp::reverseLanderMovement()
 {
 	if (catapultShip)
 	{
+		// cout<< "pos: x:"<<lander.getPosition().x<<" y:"<<lander.getPosition().y<<" z:"<<lander.getPosition().z<<endl;
 		flySpeed += 3;
 		if (getFlyDir)
 		{
@@ -833,6 +1032,8 @@ void ofApp::reverseLanderMovement()
 	}
 	else if (isCollided)
 	{
+		// cout<< "collieded: pos: x:"<<lander.getPosition().x<<" y:"<<lander.getPosition().y<<" z:"<<lander.getPosition().z<<endl;
+		float sp = spaceCraft.velocity.length();
 		float stepBackSize = 100;
 		glm::vec3 reverseStep = lastMovementDirection * stepBackSize * -1;
 		spaceCraft.acceleration = reverseStep;
@@ -857,4 +1058,30 @@ void ofApp::checkCollision()
 	octree.intersect(bounds, octree.root, colBoxList);
 	collisionCount = colBoxList.size();
 	isCollided = collisionCount >= 10;
+}
+
+void ofApp::isInLandArea()
+{
+	float landerX = lander.getPosition().x;
+	float landerY = lander.getPosition().y;
+	float landerZ = lander.getPosition().z;
+	double distance1 = sqrt(pow(landPlace1.x - landerX, 2) + pow(landPlace1.y - landerY, 2) + pow(landPlace1.z - landerZ, 2));
+	double distance2 = sqrt(pow(landPlace2.x - landerX, 2) + pow(landPlace2.y - landerY, 2) + pow(landPlace2.z - landerZ, 2));
+	double distance3 = sqrt(pow(landPlace3.x - landerX, 2) + pow(landPlace3.y - landerY, 2) + pow(landPlace3.z - landerZ, 2));
+	if ((distance1 < radius1) && (landerY - landPlace1.y < 1.5))
+	{
+		inLandArea = true;
+	}
+	else if ((distance2 < radius2) && (landerY - landPlace2.y < 1.5))
+	{
+		inLandArea = true;
+	}
+	else if ((distance3 < radius3) && (landerY - landPlace3.y < 1.5))
+	{
+		inLandArea = true;
+	}
+	else
+	{
+		inLandArea = false;
+	}
 }

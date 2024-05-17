@@ -34,9 +34,10 @@ public:
 	void togglePointsDisplay();
 
 	ofEasyCam cam;
+	ofEasyCam trackingCam, onBoardCam;
 	ofxAssimpModelLoader lander, mars;
 	ofLight light;
-	ofImage backgroundImage;
+	ofImage backgroundImage,winImg;
 	ofCamera *theCam = NULL;
 	ofCamera topCam;
 
@@ -76,16 +77,19 @@ public:
 	ofxToggle groundHeight;
 
 	void startThruster(ParticleEmitter &emitter);
+	void loadThrusterVbo();
+	void loadExplosionVbo();
 	// ofShader shader;
 
 	bool bLanderSelected = false;
 	bool bTerrainSelected;
 	bool bInDrag = false;
+	bool bHide;
 	glm::vec3 mouseDownPos, mouseLastPos;
 	bool bDisplayOctree = false;
 	bool bDisplayBBoxes = true;
-	float pointToRayDistance(const glm::vec3 &point, const Ray &ray);
-	ofVec3f getClosestPointToRay(const TreeNode &node, const Ray &ray);
+	// float pointToRayDistance(const glm::vec3 &point, const Ray &ray);
+	// ofVec3f getClosestPointToRay(const TreeNode &node, const Ray &ray);
 
 	bool isCollided = false;
 	bool isReverseAnimationActive = false;
@@ -127,4 +131,33 @@ public:
 	bool restartBool=true;
 	ofVec3f shipGravity;
 	// ofShader particleShader;
+
+	// textures
+	ofTexture  particleTex1,particleTex2;
+
+	// shaders
+	ofVbo thrusterVBO, explosionVBO;
+
+	ofShader shader;
+
+	ofLight keyLight, fillLight, rimLight;
+
+	ofSoundPlayer explosionSound;
+	ofSoundPlayer thrusterSound, gameOverSound, gameWinSound, backgroudSound;
+	// std::vector<ofFloatColor> particleColors1;
+	// std::vector<ofFloatColor> particleColors2;
+	ofVec3f landPlace1;
+	ofVec3f landPlace2;
+	ofVec3f landPlace3;
+	float radius1 = 10;
+	float radius2 = 12;
+	float radius3 = 9;
+	bool inLandArea=false;
+	void isInLandArea();
+	bool winImgLoaded=false;
+	// bool playingWinSound = false;
+	bool playingExplosionSound = false;
+	bool playingGamenOverSound = false;
+	float fuelTime;
+    float maxFuelTime = 120; // 2 minutes of fuel
 };
