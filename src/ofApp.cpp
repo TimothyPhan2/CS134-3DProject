@@ -70,13 +70,13 @@ void ofApp::setup()
 	// load BG image
 	//
 	bBackgroundLoaded = backgroundImage.load("images/background.jpg");
-	if (winImg.load("images/HappyFace.png"))
+	if (winImg.load("images/HappyFace.png") && loseImg.load("images/unhappyFace.png"))
 	{
 		winImgLoaded = true;
 	}
 	else
 	{
-		cout << "Can't open player image file" << endl;
+		cout << "Can't open win/lose image file" << endl;
 	}
 
 	octree.create(mars.getMesh(1), 20);
@@ -130,7 +130,7 @@ void ofApp::setup()
 
 	// load textures
 	//
-	if (!ofLoadImage(particleTex1, "images/red.jpg"))
+	if (!ofLoadImage(particleTex1, "images/1.jpg"))
 	{
 		cout << "Particle Texture File1: images/thrusterFire.jpg not found" << endl;
 		ofExit();
@@ -425,29 +425,29 @@ void ofApp::draw()
 				ofVec3f max = lander.getSceneMax() + lander.getPosition();
 
 				Box bounds = Box(Vector3(min.x, min.y, min.z), Vector3(max.x, max.y, max.z));
-				ofNoFill();
-				ofSetColor(ofColor::white);
-				Octree::drawBox(bounds);
+				// ofNoFill();
+				// ofSetColor(ofColor::white);
+				// Octree::drawBox(bounds);
 			}
 
 			// draw colliding boxes
 			//
 			// ofSetColor(ofColor::green);
-			for (int i = 0; i < colBoxList.size(); i++)
-			{
-				if (isCollided)
-				{
-					// ofPushStyle();
-					ofSetColor(ofColor::red);
-					Octree::drawBox(colBoxList[i]);
-					// ofPopStyle();
-				}
-				else
-				{
-					ofSetColor(ofColor::green);
-					Octree::drawBox(colBoxList[i]);
-				}
-			}
+			// for (int i = 0; i < colBoxList.size(); i++)
+			// {
+			// 	if (isCollided)
+			// 	{
+			// 		// ofPushStyle();
+			// 		ofSetColor(ofColor::red);
+			// 		Octree::drawBox(colBoxList[i]);
+			// 		// ofPopStyle();
+			// 	}
+			// 	else
+			// 	{
+			// 		ofSetColor(ofColor::green);
+			// 		Octree::drawBox(colBoxList[i]);
+			// 	}
+			// }
 		}
 	}
 	if (bTerrainSelected)
@@ -573,7 +573,7 @@ void ofApp::draw()
 		string str5 = "Game Over! Lose!";
 		ofSetColor(ofColor::red);
 		ofDrawBitmapString(str5, ofGetWindowWidth() / 2 - 15, 15);
-		if (sp > 2500 || fuelTime <= 0)
+		if (sp > 1500 || fuelTime <= 0)
 		{
 			fuelTime = 0;
 			catapultShip = false;
@@ -583,6 +583,14 @@ void ofApp::draw()
 				gameOverSound.play();
 				playingGamenOverSound = false;
 			}
+			float windowWidth = ofGetWidth();
+			float windowHeight = ofGetHeight();
+			float imgWidth = loseImg.getWidth() * 8;
+			float imgHeight = loseImg.getHeight() * 8;
+
+			float xPos = (windowWidth - imgWidth) / 2;
+			float yPos = (windowHeight - imgHeight) / 2;
+			loseImg.draw(xPos, yPos, imgWidth, imgHeight); // draw img at center
 			lander.setPosition(0, 0.5, 0);
 			spaceCraft.velocity.set(0, 0, 0);
 			spaceCraft.acceleration.set(0, 0, 0);
@@ -743,6 +751,7 @@ void ofApp::restart()
 	gameWinSound.stop();
 	playingGamenOverSound = true;
 	playingExplosionSound = true;
+	fuelTime = 120;
 }
 
 void ofApp::toggleWireframeMode()

@@ -37,7 +37,7 @@ public:
 	ofEasyCam trackingCam, onBoardCam;
 	ofxAssimpModelLoader lander, mars;
 	ofLight light;
-	ofImage backgroundImage,winImg;
+	ofImage backgroundImage,winImg,loseImg;
 	ofCamera *theCam = NULL;
 	ofCamera topCam;
 
